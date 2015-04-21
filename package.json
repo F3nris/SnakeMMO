@@ -1,0 +1,30 @@
+{
+  "name": "SnakeMMO",
+  "version": "0.0.1",
+  "description": "A massive multiplayer online adaption of the classic snake game",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/F3nris/SnakeMMO.git"
+  },
+  "keywords": [
+    "Snake",
+    "MMO",
+    "Workbalancing",
+    "work-balancing",
+    "game"
+  ],
+  "author": "Michael Thiele-Maas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/F3nris/SnakeMMO/issues"
+  },
+  "homepage": "https://github.com/F3nris/SnakeMMO",
+  "dependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-uglify": "^0.9.1"
+  }
+}
