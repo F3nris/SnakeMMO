@@ -29,7 +29,10 @@ var visualization = (function(){
       visualization.ctx.clearRect(0, 0, 800, 480);
 
       if (logic.inMenu) {
-        visualization.drawButton(250, 200, 300,100);
+        // Draw menu (button)
+        visualization.drawButton(250, 200, 300, 100);
+        visualization.ctx.font = "40px Arial";
+        visualization.ctx.fillText("Play!",355,265);
       }
       window.requestAnimationFrame(visualization.render);
     }
