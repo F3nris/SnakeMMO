@@ -1,0 +1,28 @@
+body {
+  background-image: url("../assets/tweed.png");
+}
+
+h1 {
+  margin-top: 1rem;
+  font-family: 'Open Sans';
+	font-size: 4rem;
+	font-style: normal;
+	font-variant: normal;
+  text-align: center;
+  color: #ffffff;
+}
+
+#content-wrapper {
+  margin: 0 auto;
+  margin-top: 1rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+  background-color: #ffffff;
+  width: 50rem;
+  height: 30rem;
+  border-radius: 0.5rem;
+}
+
+#content-canvas {
+  width: 100%;
+  height: 100%;
+}
