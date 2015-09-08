@@ -1,0 +1,31 @@
+{
+  "name": "mainserver",
+  "version": "0.0.1",
+  "description": "Main server for the Snake MMO, which contains a basic web server to deliver the client application and manages the instances of world-segement-managers",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/F3nris/SnakeMMO.git"
+  },
+  "keywords": [
+    "Snake",
+    "MMO",
+    "game",
+    "node.js",
+    "dynamic",
+    "interactive",
+    "canvas"
+  ],
+  "author": "Michael Thiele-Maas",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/F3nris/SnakeMMO/issues"
+  },
+  "homepage": "https://github.com/F3nris/SnakeMMO#readme",
+  "dependencies": {
+    "express": "^4.13.3"
+  }
+}
