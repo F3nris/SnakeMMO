@@ -1,3 +1,4 @@
 module.exports = {
-  SERVER_PORT : 3000
+  WEB_SERVER_PORT : 3000,
+  IO_PORT : 4000
 };
