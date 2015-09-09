@@ -17,21 +17,16 @@ var logic = (function(){
     keyListener : function (e) {
       if (!logic.inMenu) {
         var key = e.keyCode ? e.keyCode : e.which;
-        switch (key) {
-          case 37: // left
-            direction = 4;
-            break;
-          case 38: // up
-            direction = 1;
-            break;
-          case 39: // right
-            direction = 2;
-            break;
-          case 40: // down
-            direction = 3;
-            break;
-          default:
-            console.log("Tastencode:"+key)
+        if (key == 37 & direction != 4 & direction != 2) {
+          direction = 4;
+        } else if (key == 38 & direction != 1 & direction != 3) {
+          direction = 1;
+        } else if (key == 39 & direction != 2 & direction != 4) {
+          direction = 2;
+        } else if (key == 40 & direction != 3 & direction != 1) {
+          direction = 3;
+        } else {
+          console.log("Tastencode:"+key);
         }
       }
     },
