@@ -28,14 +28,38 @@ var visualization = (function(){
       this.ctx.stroke();
     },
     drawMenuBackground : function () {
-      this.drawSnakeHead(100,100,255,0,0,0.5);
+      this.drawApple(75,75);
+      this.drawApple(375,375);
+      this.drawApple(675,275);
+      this.drawApple(45,375);
 
+      this.drawSnakeHead(100,100,255,0,0,0.5);
       this.drawSnakeBodyPart(100,125,255,0,0,0.5);
       this.drawSnakeBodyPart(125,125,255,0,0,0.5);
       this.drawSnakeBodyPart(125,150,255,0,0,0.5);
       this.drawSnakeBodyPart(125,175,255,0,0,0.5);
 
-      this.drawApple(75,75);
+      this.drawSnakeHead(650,250,255,255,0,0.5)
+      this.drawSnakeBodyPart(600,175,255,255,0,0.5);
+      this.drawSnakeBodyPart(600,200,255,255,0,0.5);
+      this.drawSnakeBodyPart(600,225,255,255,0,0.5);
+      this.drawSnakeBodyPart(600,250,255,255,0,0.5);
+      this.drawSnakeBodyPart(625,250,255,255,0,0.5);
+
+      this.drawSnakeHead(600,75,255,0,255,0.5);
+      this.drawSnakeBodyPart(625,75,255,0,255,0.5);
+      this.drawSnakeBodyPart(650,75,255,0,255,0.5);
+      this.drawSnakeBodyPart(675,75,255,0,255,0.5);
+      this.drawSnakeBodyPart(675,50,255,0,255,0.5);
+
+      this.drawSnakeHead(100,400,0,0,255,0.5);
+      this.drawSnakeBodyPart(125,400,0,0,255,0.5);
+      this.drawSnakeBodyPart(150,400,0,0,255,0.5);
+      this.drawSnakeBodyPart(175,400,0,0,255,0.5);
+      this.drawSnakeBodyPart(200,400,0,0,255,0.5);
+      this.drawSnakeBodyPart(225,400,0,0,255,0.5);
+      this.drawSnakeBodyPart(250,400,0,0,255,0.5);
+      this.drawSnakeBodyPart(275,400,0,0,255,0.5);
     },
     drawSnakeHead : function (x,y,r,g,b,a) {
       var drawColor = "rgba("+r+","+g+","+b+","+a+")";
