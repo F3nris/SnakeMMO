@@ -8,17 +8,8 @@ var config = require('./config.js');
 http.listen(config.IO_PORT);
 
 app.use(express.static('public'));
-
-/*app.get('/', function (req, res) {
-  res.send('Hello World!');
-});*/
-
-var server = app.listen(config.WEB_SERVER_PORT, function () {
-  var host = server.address().address;
-  var port = server.address().port;
-
-  console.log('Snake MMO web server is now listening at http://%s:%s', host, port);
-});
+app.listen(config.WEB_SERVER_PORT);
+console.log('Snake MMO web server is now listening at Port '+ config.WEB_SERVER_PORT);
 
 io.on('connection',function(socket){
   /**
