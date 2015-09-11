@@ -1,5 +1,7 @@
-var Player = require('./prototypes/Client.js').Client;
+var Client = require('./prototypes/Client.js').Client;
+var Map = require('./prototypes/Map.js').Map;
 
+var map;
 var players = [];
 var segmentManagers = [];
 var baseID = 0;
@@ -14,7 +16,15 @@ function addClient (type, address, socket) {
     console.log("Now "+players.length+" player(s) are connected");
   } else if (type === "segmentmanager") {
     segmentManagers.push(new Client("segmentmanager", generateID(), address, socket, removeClient));
-    console.log("Now "+segmentManagers.length+" player(s) are connected");
+    if (segmentManagers.length === 1) {
+      // First segmentmanager, init map
+      map = new Map();
+      map.init(segmentManagers[0]);
+    } else {
+      // Rearrange chunks, new work power is available
+      // TODO: Add functionality
+    }
+    console.log("Now "+segmentManagers.length+" segmentManager(s) are connected");
   }
 }
 
@@ -24,7 +34,7 @@ function removeClient (role, id) {
     console.log("Now "+players.length+" player(s) are connected");
   } else if (role === "segmentmanager") {
     segmentManagers = filterById(segmentManagers, id);
-    console.log("Now "+segmentManagers.length+" segmentManagers(s) are connected");
+    console.log("Now "+segmentManagers.length+" segmentManager(s) are connected");
   }
 }
 
