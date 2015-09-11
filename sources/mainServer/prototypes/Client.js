@@ -20,4 +20,4 @@ function Client (role, id, address, socket, disconnectCallback) {
     });
   };
 
- exports.Player = Player;
+ exports.Client = Client;

@@ -13,4 +13,7 @@
    this.tiles = [];
  }
 
-exports.Tile = Tile;
+module.exports =  {
+  Chunk: Chunk,
+  CHUNK_SIZE: 25
+} ;
