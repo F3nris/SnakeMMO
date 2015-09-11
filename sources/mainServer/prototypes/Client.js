@@ -1,11 +1,23 @@
-(function(exports){
+/**
+ * This is the prototype which the main server uses to manage a
+ * player client.
+ */
+function Client (role, id, address, socket, disconnectCallback) {
+    this.id = id;
+    this.role = role;
+    this.address = address ;
+    this.socket = socket;
+    this.disconnectCallback = disconnectCallback;
+    this.init();
+  }
 
-    function Client (id, address, socket) {
-      this.id = id;
-      this.address = address ;
-      this.socket = socket;
-    }
+  Client.prototype.init = function () {
+    var playerScope = this;
 
-   exports.Client = Client;
+    this.socket.on ('disconnect',function(){
+      console.log("Client disconnected (Role: "+playerScope.role+")");
+      playerScope.disconnectCallback("player",playerScope.id);
+    });
+  };
 
-})(typeof exports === 'undefined'? this['Client']={}: exports);
+ exports.Player = Player;

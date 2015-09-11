@@ -1,4 +1,4 @@
-var Client = require('./prototypes/Client.js').Client;
+var Player = require('./prototypes/Client.js').Client;
 
 var players = [];
 var segmentManagers = [];
@@ -10,12 +10,31 @@ function generateID () {
 
 function addClient (type, address, socket) {
   if (type === "player") {
-    players.push(new Client(generateID(), null, socket));
+    players.push(new Client("player", generateID(), null, socket, removeClient));
+    console.log("Now "+players.length+" player(s) are connected");
   } else if (type === "segmentmanager") {
-    segmentManagers.push(new Client(generateID(), address, socket));
+    segmentManagers.push(new Client("segmentmanager", generateID(), address, socket, removeClient));
+    console.log("Now "+segmentManagers.length+" player(s) are connected");
   }
 }
 
+function removeClient (role, id) {
+  if (role === "player") {
+    players = filterById(players, id);
+    console.log("Now "+players.length+" player(s) are connected");
+  } else if (role === "segmentmanager") {
+    segmentManagers = filterById(segmentManagers, id);
+    console.log("Now "+segmentManagers.length+" segmentManagers(s) are connected");
+  }
+}
+
+function filterById(array, id) {
+    return array.filter(function( obj ) {
+        return obj.id != id;
+    });
+}
+
 module.exports = {
-  addClient : addClient
+  addClient : addClient,
+  removeClient : removeClient
 };
