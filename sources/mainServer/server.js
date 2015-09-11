@@ -4,6 +4,7 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
 var config = require('./config.js');
+var logic = require('./applicationLogic.js');
 
 http.listen(config.IO_PORT);
 
@@ -17,11 +18,13 @@ io.on('connection',function(socket){
    * to declare its role (segmentmanager or player). The server will apply the respective
    * role and use the client accordingly.
    */
-  socket.on ('introduction', function(role){
-    if (role === "player") {
+  socket.on ('introduction', function(data){
+    if (data.role === "player") {
       console.log("A player connected to the server.");
-    } else if (role === "segmentmanager") {
+      logic.addClient("player", null, socket);
+    } else if (data.role === "segmentmanager") {
       console.log("A new segmentmanager connected to the server.");
+      logic.addClient("segmentmanager", data.ip + ':' + data.port, socket);
     } else {
       socket.disconnect();
     }
