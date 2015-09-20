@@ -5,9 +5,10 @@
  *
  * Type: "body" | "apple" | "head"
  */
-function Tile (type, id, x, y) {
+function Tile (type, id, ttl) {
   this.type = type;
-  this.id = id;
+  this.playerID = id;
+  this.ttl = ttl || -1;
 }
 
 exports.Tile = Tile;

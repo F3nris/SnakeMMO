@@ -1,5 +1,6 @@
 var Chunk = require ("./Chunk.js");
 var CHUNK_SIZE = Chunk.CHUNK_SIZE;
+
 Chunk = Chunk.Chunk;
 
 /**
@@ -13,9 +14,13 @@ Chunk = Chunk.Chunk;
  * creased or decreased (or kept).
  */
  function Map () {
-   this.minSize = 4;
+   this.chunkID=0;
+   this.minSize = 1;
    this.chunks = [];
    this.fillLevel;
+   this.boundaries = {
+     top : 0, bot : 0, left : 0, right : 0
+   }
  }
 
 /**
@@ -26,7 +31,7 @@ Chunk = Chunk.Chunk;
    var loopSize = this.minSize / 2;
    for (var i=0; i<loopSize; i++) {
      for (var j=0; j<loopSize; j++) {
-       var c = this.addChunk(firstSegmentManager.id, i*CHUNK_SIZE, j*CHUNK_SIZE);
+       var c = this.addChunk(this.chunkID++, i*CHUNK_SIZE, j*CHUNK_SIZE, firstSegmentManager.id);
        firstSegmentManager.socket.emit('chunk', c);
      }
    }
@@ -36,8 +41,22 @@ Chunk = Chunk.Chunk;
  * Adds a Chunk at the respective x/y coordinates and assigns the id of
  * the segmentManager to it.
  */
- Map.prototype.addChunk = function (id, x, y) {
-   var chunk = new Chunk(id, x, y);
+ Map.prototype.addChunk = function (id, x, y, segmentManagerID) {
+   var chunk = new Chunk(id, x, y, segmentManagerID);
+
+   // Check if this results in new boundaries
+   if (x < this.boundaries.left) {
+     this.boundaries.left = x;
+   } else if (x+CHUNK_SIZE > this.boundaries.right) {
+     this.boundaries.right = x + CHUNK_SIZE;
+   }
+
+   if (y < this.boundaries.top) {
+     this.boundaries.top = y;
+   } else if (y+CHUNK_SIZE > this.boundaries.bot) {
+     this.boundaries.bot = y + CHUNK_SIZE;
+   }
+
    // TODO: chunks sortiert einfügen?
    this.chunks.push(chunk);
    return chunk;
