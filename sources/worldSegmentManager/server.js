@@ -4,7 +4,7 @@ var findPort = require('find-port');
 var ip = require('my-local-ip');
 
 var config = require('./config.js');
-var chunkmanager = require('./ChunkManager.js');
+var ChunkManager = require('./ChunkManager.js').ChunkManager;
 
 findPort(config.IO_PORT_MIN, config.IO_PORT_MAX, function(ports) {
   console.log("Starting SegmentManager on Port "+ports[0]);
@@ -12,4 +12,4 @@ findPort(config.IO_PORT_MIN, config.IO_PORT_MAX, function(ports) {
   ioClient.emit("introduction", { 'role': 'segmentmanager', 'ip': ip(), 'port': ports[0]});
 });
 
-chunkmanager.init(ioClient, ioServer);
+new ChunkManager(ioClient, ioServer);

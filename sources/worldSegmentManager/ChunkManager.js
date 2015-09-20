@@ -2,41 +2,43 @@ var Chunk = require ("../mainServer/prototypes/Chunk.js");
 var CHUNK_SIZE = Chunk.CHUNK_SIZE;
 Chunk = Chunk.Chunk;
 
-var BASE_LENGTH = 3;
+var BASE_LENGTH = 8;
 
-var mainServerSocket;
-var playerServerSocket;
+function ChunkManager (socket, server) {
+  this.playerServerSocket = server;
+  this.mainServerSocket = socket;
 
-var chunks = [];
-var players = [];
+  this.chunks = [];
+  this.players = [];
 
-function init(socket, server) {
-  playerServerSocket = server;
-  mainServerSocket = socket;
-
-  initMainServerSocket();
-  initPlayerServerSocket();
+  this.initMainServerSocket();
+  this.initPlayerServerSocket();
 }
 
-function initMainServerSocket () {
-  mainServerSocket.on('chunk', function(chunk) {
-    //console.log(chunk);
-    addChunk(chunk);
+ChunkManager.prototype.initMainServerSocket = function() {
+  var localScope = this;
+
+  this.mainServerSocket.on('chunk', function(chunk) {
+    localScope.addChunk(chunk);
   });
 
-  mainServerSocket.on('update', function() {
-    update();
+  this.mainServerSocket.on('update', function() {
+    localScope.update();
   });
 
-  // Spawn a player
-  mainServerSocket.on('spawn', function(playerID){
-    spawnPlayer(playerID);
+  this.mainServerSocket.on('spawn', function(playerID){
+    localScope.spawnPlayer(playerID);
+  });
+
+  this.mainServerSocket.on('kill', function(playerID) {
+    localScope.killPlayer(playerID);
   });
 }
 
-function initPlayerServerSocket() {
+ChunkManager.prototype.initPlayerServerSocket = function() {
+  var localScope = this;
   // Initialize its own server
-  playerServerSocket.on('connection',function(socket){
+  this.playerServerSocket.on('connection',function(socket){
     console.log("A player connected");
 
     socket.on('subscribe-chunk', function(chunkID) {
@@ -48,55 +50,64 @@ function initPlayerServerSocket() {
     });
 
     socket.on('playerID', function(playerID) {
-      players.push ({'playerID': playerID, 'socket': socket, 'direction': 0, 'length': BASE_LENGTH});
+      if (!localScope.players.find(function(el){
+        return el.playerID === playerID;
+      })) {
+          localScope.players.push ({'playerID': playerID, 'socket': socket, 'direction': 0, 'length': BASE_LENGTH});
+      }
     });
 
     socket.on('direction-change', function(data){
-      players.find(function(player){
+      localScope.players.find(function(player){
         return data.playerID === player.playerID;
       }).direction = data.direction;
     });
 
     socket.on('disconnect', function(){
       console.log("SocketID: "+socket.id);
-      players = players.filter(function(player){
+      localScope.players = localScope.players.filter(function(player){
         return player.socket.id != socket.id;
       });
     });
   });
 }
 
-function update () {
+ChunkManager.prototype.update = function () {
   // Decrement all ttls
-  for (var i=0; i<chunks.length; i++) {
-    chunks[i].updatePositionsAndTTLs(players);
+  for (var i=0; i<this.chunks.length; i++) {
+    this.chunks[i].updatePositionsAndTTLs(this.players);
   }
 
   // Send updated Chunks to clients
-  for (var i=0; i<chunks.length; i++){
-    playerServerSocket.to(chunks[i].id.toString()).emit('chunk-update', chunks[i]);
+  for (var i=0; i<this.chunks.length; i++){
+    this.playerServerSocket.to(this.chunks[i].id.toString()).emit('chunk-update', this.chunks[i].flatten());
   }
 }
 
-function addChunk (chunk) {
+ChunkManager.prototype.addChunk = function (chunk) {
   console.log ("Received a new chunk to manage from mainServer:");
   console.log (" - - - X: "+chunk.x+" Y: "+chunk.y);
-  chunks.push(new Chunk(chunk.id, chunk.x, chunk.y, chunk.segmentManagerID));
+  this.chunks.push(new Chunk(chunk.id, chunk.x, chunk.y, chunk.segmentManagerID, this));
 }
 
-function spawnPlayer(playerID) {
-  var index = Math.floor(Math.random()*chunks.length);
-  console.log("index: "+index+" length:"+chunks.length);
-  var chunk = chunks[index];
+ChunkManager.prototype.spawnPlayer = function (playerID) {
+  var index = Math.floor(Math.random()*this.chunks.length);
+  var chunk = this.chunks[index];
   var coordinates = chunk.spawnPlayerAtFreeSpot(playerID, BASE_LENGTH);
-  mainServerSocket.emit('spawn', {
+
+  this.mainServerSocket.emit('spawn', {
     'playerID':playerID,
     'x' : coordinates.x,
     'y' : coordinates.y
   });
 }
 
+ChunkManager.prototype.killPlayer = function (playerID) {
+  this.players = this.players.filter(function(el){
+    return el.playerID !=  playerID;
+  });
+}
+
 module.exports = {
-  "init" : init,
-  "addChunk" : addChunk
+  ChunkManager : ChunkManager
 };
