@@ -133,7 +133,7 @@ var visualization = (function(){
           var currentX = (chunkOffsetX + Math.floor(currentTileKey / 25)) - offsetX;
           var currentY = (chunkOffsetY + (currentTileKey % 25)) - offsetY;
 
-          var color = visualization.getOrGenerateColor(currentTile.id);
+          var color = visualization.getOrGenerateColor(currentTile.playerID);
 
           if (currentTile.type === "body") {
             this.drawSnakeBodyPart(currentX, currentY, color);

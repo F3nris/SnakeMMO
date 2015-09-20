@@ -2,7 +2,7 @@ var Chunk = require ("../mainServer/prototypes/Chunk.js");
 var CHUNK_SIZE = Chunk.CHUNK_SIZE;
 Chunk = Chunk.Chunk;
 
-var BASE_LENGTH = 8;
+var BASE_LENGTH = 4;
 
 function ChunkManager (socket, server) {
   this.playerServerSocket = server;
@@ -58,9 +58,10 @@ ChunkManager.prototype.initPlayerServerSocket = function() {
     });
 
     socket.on('direction-change', function(data){
-      localScope.players.find(function(player){
+      var player = localScope.players.find(function(player){
         return data.playerID === player.playerID;
-      }).direction = data.direction;
+      });
+      player.direction = data.direction;
     });
 
     socket.on('disconnect', function(){

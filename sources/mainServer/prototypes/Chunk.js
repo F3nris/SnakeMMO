@@ -53,7 +53,7 @@ var Tile = require('./Tile.js').Tile;
      var currentPlayerID = currentTile.playerID;
 
      var currentPlayer = players.find(function(player){
-       return currentPlayerID = player.playerID;
+       return currentPlayerID === player.playerID;
      });
 
      if (currentTile.type === "body") {
