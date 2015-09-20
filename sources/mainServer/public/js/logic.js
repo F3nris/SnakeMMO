@@ -98,7 +98,13 @@ var logic = (function(){
       }
 
       network.prepareConnections(chunksSortedBySegmentManager);
+    },
+    kill: function() {
+      logic.inMenu = true;
+      logic.direction = 0;
+      logic.activeChunk = null;
+      logic.localMap = {};
+      logic.localPosition = {};
     }
-
   }
 })();

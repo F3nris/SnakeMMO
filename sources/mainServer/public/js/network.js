@@ -29,11 +29,15 @@ var network = (function(){
         logic.updateLocalPosition(coordinates);
       });
 
-      // Inform player on disconnect
-      network.mainServerSocket.on ('disconnect', function(){
-        alert("Disconnected from the server. Maybe reloading the page will help.");
+
+      network.mainServerSocket.on ('kill', function(){
+        logic.kill();
       });
 
+      // Inform player on disconnect
+      network.mainServerSocket.on ('disconnect', function(){
+        //alert("Disconnected from the server. Maybe reloading the page will help.");
+      });
     },
     sendPlay : function (){
       network.mainServerSocket.emit('play');
@@ -58,13 +62,13 @@ var network = (function(){
 
         if (!currentSegmentManager.socket) {
           currentSegmentManager.socket = io.connect(currentSegmentManager.address);
-          currentSegmentManager.socket.emit('playerID', logic.playerID);
-          currentSegmentManager.socket.on('chunk-update', network.receiveChunkUpdate);
-          currentSegmentManager.socket.on('position-update', logic.updateLocalPosition);
+        }
+        currentSegmentManager.socket.emit('playerID', logic.playerID);
+        currentSegmentManager.socket.on('chunk-update', network.receiveChunkUpdate);
+        currentSegmentManager.socket.on('position-update', logic.updateLocalPosition);
 
-          for (j in sortedChunks[segmentManagerIDs[i]]){
-            currentSegmentManager.socket.emit('subscribe-chunk', j);
-          }
+        for (j in sortedChunks[segmentManagerIDs[i]]){
+          currentSegmentManager.socket.emit('subscribe-chunk', j);
         }
       }
     },
