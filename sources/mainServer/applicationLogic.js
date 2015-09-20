@@ -41,11 +41,11 @@ ApplicationLogic.prototype.init = function () {
       localScope.segmentManagers[i].socket.emit('update');
     }
   }, config.HEARTBEAT);
-}
+};
 
 ApplicationLogic.prototype.generateID = function () {
   return this.baseID ++;
-}
+};
 
 ApplicationLogic.prototype.addClient = function (type, address, socket) {
   if (type === "player") {
@@ -72,7 +72,7 @@ ApplicationLogic.prototype.addClient = function (type, address, socket) {
     }
     console.log("Now "+this.segmentManagers.length+" segmentManager(s) are connected");
   }
-}
+};
 
 ApplicationLogic.prototype.removeClient = function (role, id) {
   if (role === "player") {
@@ -83,12 +83,12 @@ ApplicationLogic.prototype.removeClient = function (role, id) {
     this.flattenedSegmentManagers = this.filterById(this.flattenedSegmentManagers, id);
     console.log("Now "+this.segmentManagers.length+" segmentManager(s) are connected");
   }
-}
+};
 
 ApplicationLogic.prototype.spawnPlayer = function (playerID) {
   var sIndex = Math.round((Math.random() * (this.segmentManagers.length-1)));
   this.segmentManagers[sIndex].socket.emit('spawn', playerID);
-}
+};
 
 ApplicationLogic.prototype.sendSpawnPoint = function (coordinates) {
   var player = this.players.filter(function(el){
@@ -98,12 +98,20 @@ ApplicationLogic.prototype.sendSpawnPoint = function (coordinates) {
   if (player.length) {
     player[0].socket.emit('spawn', coordinates);
   }
-}
+};
 
 ApplicationLogic.prototype.filterById = function (array, id) {
     return array.filter(function( obj ) {
         return obj.id != id;
     });
-}
+};
+
+ApplicationLogic.prototype.killPlayer = function (playerID) {
+  this.io.to('segment-managers').emit('kill', playerID);
+
+  this.players.find(function(el){
+    return el.id = playerID;
+  }).socket.emit('kill');
+};
 
 exports.ApplicationLogic = ApplicationLogic;

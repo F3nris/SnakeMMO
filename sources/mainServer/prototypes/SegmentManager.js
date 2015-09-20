@@ -23,6 +23,10 @@ function SegmentManager (id, address, socket, parent) {
     this.socket.on('spawn', function(coordinates) {
       localScope.parent.sendSpawnPoint(coordinates);
     });
+
+    this.socket.on('kill', function (playerID) {
+      localScope.parent.killPlayer (playerID);
+    })
   };
 
   SegmentManager.prototype.flatten = function() {

@@ -7,13 +7,14 @@ var Tile = require('./Tile.js').Tile;
  * segmentManagers are able to manage multiple chunks and exchange chunks to
  * rebalance the map.
  */
- function Chunk (id, x, y, segmentManagerID) {
+ function Chunk (id, x, y, segmentManagerID, parent) {
    this.id = id;
    this.segmentManagerID = segmentManagerID;
    this.x = x;
    this.y = y;
    this.tiles = {};
    this.appleCount = 0;
+   this.parent = parent;
  }
 
  var CHUNK_SIZE = 25;
@@ -137,7 +138,8 @@ var Tile = require('./Tile.js').Tile;
        currentPlayer.length ++;
        this.appleCount--;
      } else { // Bad news, you hit something
-       // TODO: Kill
+       // TODO: Kill, Callback needed!
+       this.parent.mainServerSocket.emit('kill', currentPlayer.playerID);
      }
    }
    return collision;
@@ -148,6 +150,16 @@ var Tile = require('./Tile.js').Tile;
    if (!this.tiles[index]) {
      this.tiles[index] = new Tile("apple",null, -1);
      this.appleCount ++;
+   }
+ }
+
+ Chunk.prototype.flatten = function () {
+   return {
+     id : this.id,
+     segmentManagerID : this.segmentManagerID,
+     x : this.x,
+     y : this.y,
+     tiles: this.tiles
    }
  }
 
