@@ -61,7 +61,17 @@ ChunkManager.prototype.initPlayerServerSocket = function() {
       var player = localScope.players.find(function(player){
         return data.playerID === player.playerID;
       });
-      player.direction = data.direction;
+
+      var newDirection = data.direction;
+      if (player.direction === 1 && (newDirection === 2 || newDirection === 4)) {
+        player.direction = newDirection;
+      } else if (player.direction === 2 && (newDirection === 1 || newDirection === 3)) {
+        player.direction = newDirection;
+      } else if (player.direction === 3 && (newDirection === 2 || newDirection === 4)) {
+        player.direction = newDirection;
+      } else if (player.direction === 4 && (newDirection === 1 || newDirection === 3)) {
+        player.direction = newDirection;
+      }
     });
 
     socket.on('disconnect', function(){
