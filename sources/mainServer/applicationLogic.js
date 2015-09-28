@@ -110,7 +110,7 @@ ApplicationLogic.prototype.killPlayer = function (playerID) {
   this.io.to('segment-managers').emit('kill', playerID);
 
   this.players.find(function(el){
-    return el.id = playerID;
+    return el.id === playerID;
   }).socket.emit('kill');
 };
 
