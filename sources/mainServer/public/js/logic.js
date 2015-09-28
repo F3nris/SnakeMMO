@@ -2,6 +2,7 @@ var logic = (function(){
   return {
     inMenu : true,
     direction : 0, // 0 - still, 1 - up, 2 - right, 3 - down, 4 - left
+    lastDirectionChange : Date.now(),
     activeChunk : null,
     playerID : null,
     localMap : {},
@@ -21,25 +22,25 @@ var logic = (function(){
     keyListener : function (e) {
       if (!logic.inMenu) {
         var key = e.keyCode ? e.keyCode : e.which;
-        var moved = true;
+        var direction = 0;
 
-        if (key == 37 & logic.direction != 4 & logic.direction != 2) {
-          logic.direction = 4;
-        } else if (key == 38 & logic.direction != 1 & logic.direction != 3) {
-          logic.direction = 1;
-        } else if (key == 39 & logic.direction != 2 & logic.direction != 4) {
-          logic.direction = 2;
-        } else if (key == 40 & logic.direction != 3 & logic.direction != 1) {
-          logic.direction = 3;
+        if (key == 37 & (logic.lastDirectionChange + 250) < Date.now()) {
+          direction = 4;
+        } else if (key == 38 & (logic.lastDirectionChange + 250) < Date.now()) {
+          direction = 1;
+        } else if (key == 39 & (logic.lastDirectionChange + 250) < Date.now()) {
+          direction = 2;
+        } else if (key == 40 & (logic.lastDirectionChange + 250) < Date.now()) {
+          direction = 3;
         } else if (key == 27) {
           // TODO: Send kill to server
           logic.inMenu = true;
         } else {
-          moved = false;
           console.log("Tastencode:"+key);
         }
 
-        if (moved) {
+        if (direction != 0) {
+          logic.lastDirectionChange = Date.now();
           network.sendDirection();
         }
       }
