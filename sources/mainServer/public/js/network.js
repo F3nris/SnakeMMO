@@ -4,7 +4,7 @@ var network = (function(){
     map : null,
     segmentManagers : [],
     init : function() {
-      network.mainServerSocket = io.connect('http://192.168.0.107:4000');
+      network.mainServerSocket = io.connect('http://localhost:4000');
 
       // Introduce yourself to the mainServer
       network.mainServerSocket.emit ('introduction', {'role' : 'player'});
@@ -42,14 +42,13 @@ var network = (function(){
     sendPlay : function (){
       network.mainServerSocket.emit('play');
     },
-    sendDirection : function () {
+    sendDirection : function (direction) {
       // send direction change to active chunk
       var segmentManager = network.segmentManagers.find (function(el){
-        console.log("EL-ID: "+el.id+" activeChunk-ID: "+logic.activeChunk.segmentManagerID);
         return el.id === logic.activeChunk.segmentManagerID;
       }).socket.emit('direction-change',{
         'playerID':logic.playerID,
-        'direction':logic.direction
+        'direction':direction
       });
     },
     prepareConnections : function (sortedChunks) {
@@ -64,6 +63,7 @@ var network = (function(){
           currentSegmentManager.socket = io.connect(currentSegmentManager.address);
         }
         currentSegmentManager.socket.emit('playerID', logic.playerID);
+        currentSegmentManager.socket.on('chunk-init', network.receiveChunkInit);
         currentSegmentManager.socket.on('chunk-update', network.receiveChunkUpdate);
         currentSegmentManager.socket.on('position-update', logic.updateLocalPosition);
 
@@ -72,8 +72,23 @@ var network = (function(){
         }
       }
     },
-    receiveChunkUpdate : function (chunk) {
+    receiveChunkInit : function (chunk) {
       logic.localMap[chunk.id] = chunk;
+    },
+    receiveChunkUpdate : function (chunk) {
+      var localTiles = logic.localMap[chunk.id].tiles;
+      var updatedTiles = chunk.tiles;
+      var tileKeys = Object.keys(updatedTiles);
+
+      for (var i=0; i<tileKeys.length; i++) {
+        var currKey = tileKeys[i];
+        if (updatedTiles[currKey]) {
+          localTiles[currKey] = updatedTiles[currKey];
+        } else {
+          delete localTiles[currKey];
+        }
+      }
+      console.log(localTiles)
     }
   }
 })();

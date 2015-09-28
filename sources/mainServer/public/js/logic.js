@@ -1,7 +1,6 @@
 var logic = (function(){
   return {
     inMenu : true,
-    direction : 0, // 0 - still, 1 - up, 2 - right, 3 - down, 4 - left
     lastDirectionChange : Date.now(),
     activeChunk : null,
     playerID : null,
@@ -22,7 +21,7 @@ var logic = (function(){
     keyListener : function (e) {
       if (!logic.inMenu) {
         var key = e.keyCode ? e.keyCode : e.which;
-        var direction = 0;
+        var direction = 0; // 0 - still, 1 - up, 2 - right, 3 - down, 4 - left
 
         if (key == 37 & (logic.lastDirectionChange + 250) < Date.now()) {
           direction = 4;
@@ -41,7 +40,7 @@ var logic = (function(){
 
         if (direction != 0) {
           logic.lastDirectionChange = Date.now();
-          network.sendDirection();
+          network.sendDirection(direction);
         }
       }
     },
@@ -59,7 +58,6 @@ var logic = (function(){
       }
     },
     updateLocalPosition : function (coordinates) {
-      console.log(logic.localPosition);
       // Update Position
       logic.localPosition.x = coordinates.x;
       logic.localPosition.y = coordinates.y;
@@ -71,7 +69,6 @@ var logic = (function(){
       var newActiveChunk = network.map.chunks.filter(function(el){
         return (el.x === x) && (el.y === y);
       })[0];
-      console.log(newActiveChunk);
       if (!logic.activeChunk || logic.activeChunk.id != newActiveChunk.id) {
           logic.activeChunk = newActiveChunk;
           // Check if new connections are necessary
@@ -106,6 +103,8 @@ var logic = (function(){
       logic.activeChunk = null;
       logic.localMap = {};
       logic.localPosition = {};
+
+      // TODO: unsubscribe-chunks
     }
   }
 })();

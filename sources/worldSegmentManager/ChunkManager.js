@@ -42,6 +42,10 @@ ChunkManager.prototype.initPlayerServerSocket = function() {
     console.log("A player connected");
 
     socket.on('subscribe-chunk', function(chunkID) {
+      var chunk = localScope.chunks.find(function(el){
+        return el.id == chunkID;
+      });
+      socket.emit('chunk-init', chunk.flatten());
       socket.join(chunkID);
     });
 
@@ -53,7 +57,12 @@ ChunkManager.prototype.initPlayerServerSocket = function() {
       if (!localScope.players.find(function(el){
         return el.playerID === playerID;
       })) {
-          localScope.players.push ({'playerID': playerID, 'socket': socket, 'direction': 0, 'length': BASE_LENGTH});
+          localScope.players.push ({
+            'playerID': playerID,
+            'socket': socket,
+            'direction': 0,
+            'length': BASE_LENGTH
+          });
       }
     });
 
@@ -63,6 +72,7 @@ ChunkManager.prototype.initPlayerServerSocket = function() {
       });
 
       var newDirection = data.direction;
+
       if (player.direction === 1 && (newDirection === 2 || newDirection === 4)) {
         player.direction = newDirection;
       } else if (player.direction === 2 && (newDirection === 1 || newDirection === 3)) {
@@ -71,11 +81,12 @@ ChunkManager.prototype.initPlayerServerSocket = function() {
         player.direction = newDirection;
       } else if (player.direction === 4 && (newDirection === 1 || newDirection === 3)) {
         player.direction = newDirection;
+      } else if (player.direction === 0) {
+        player.direction = newDirection;
       }
     });
 
     socket.on('disconnect', function(){
-      console.log("SocketID: "+socket.id);
       localScope.players = localScope.players.filter(function(player){
         return player.socket.id != socket.id;
       });
@@ -87,11 +98,6 @@ ChunkManager.prototype.update = function () {
   // Decrement all ttls
   for (var i=0; i<this.chunks.length; i++) {
     this.chunks[i].updatePositionsAndTTLs(this.players);
-  }
-
-  // Send updated Chunks to clients
-  for (var i=0; i<this.chunks.length; i++){
-    this.playerServerSocket.to(this.chunks[i].id.toString()).emit('chunk-update', this.chunks[i].flatten());
   }
 }
 

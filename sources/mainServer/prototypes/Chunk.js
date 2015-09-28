@@ -43,8 +43,13 @@ var Tile = require('./Tile.js').Tile;
  Chunk.prototype.updatePositionsAndTTLs = function (players) {
    var tileKeys = Object.keys(this.tiles);
 
+   var updatedChunk = {
+     'id': this.id,
+     'tiles': {}
+   };
+
    if (players.length > (this.appleCount * 0.5)) {
-     this.spawnApple();
+     this.spawnApple(updatedChunk);
    }
 
    for (var i=0; i<tileKeys.length; i++) {
@@ -58,20 +63,24 @@ var Tile = require('./Tile.js').Tile;
 
      if (currentTile.type === "body") {
        if (this.decreaseTTL(currentTile) || !currentPlayer) {
+         updatedChunk.tiles[currentTileKey] = null;
          delete this.tiles[currentTileKey];
        }
      } else if (currentTile.type === "head") {
        if (!currentPlayer) {
+         updatedChunk.tiles[currentTileKey] = null;
          delete this.tiles[currentTileKey];
        } else {
          // Update Position
-         this.updateSnakeHead(currentPlayer, currentTile, currentTileKey);
+         this.updateSnakeHead(currentPlayer, currentTile, currentTileKey, updatedChunk);
        }
      }
    }
+
+   this.parent.playerServerSocket.to(this.id.toString()).emit('chunk-update', updatedChunk);
  };
 
- Chunk.prototype.updateSnakeHead = function (currentPlayer, currentTile, currentTileKey) {
+ Chunk.prototype.updateSnakeHead = function (currentPlayer, currentTile, currentTileKey, updatedChunk) {
    var moved = true;
    var currentX = Math.floor(currentTileKey/CHUNK_SIZE);
    var currentY = currentTileKey % CHUNK_SIZE;
@@ -96,11 +105,15 @@ var Tile = require('./Tile.js').Tile;
 
    if (moved) {
      if (!this.checkCollision(currentPlayer, currentX, currentY)) {
-       this.tiles[(currentX*CHUNK_SIZE)+currentY] = new Tile(
+       var newKey = (currentX*CHUNK_SIZE)+currentY ;
+       var t = new Tile(
          "head",
          currentPlayer.playerID,
          currentPlayer.length
        );
+       updatedChunk.tiles[newKey] = t;
+       this.tiles[newKey] = t;
+
        currentPlayer.socket.emit('position-update', {
          'playerID': currentPlayer.playerID,
          'x': currentX + this.x,
@@ -110,9 +123,11 @@ var Tile = require('./Tile.js').Tile;
 
      // Make a body where the head was
      if (this.decreaseTTL(currentTile)) {
+       updatedChunk.tiles[currentTileKey] = null;
        delete this.tiles[currentTileKey];
      } else {
        currentTile.type = "body";
+       updatedChunk.tiles[currentTileKey] = currentTile;
      }
    }
  }
@@ -145,10 +160,12 @@ var Tile = require('./Tile.js').Tile;
    return collision;
  }
 
- Chunk.prototype.spawnApple = function () {
+ Chunk.prototype.spawnApple = function (updatedChunk) {
    var index = Math.floor(Math.random() * CHUNK_SIZE * CHUNK_SIZE);
    if (!this.tiles[index]) {
-     this.tiles[index] = new Tile("apple",null, -1);
+     var apple = new Tile("apple",null, -1);
+     this.tiles[index] = apple;
+     updatedChunk.tiles[index] = apple;
      this.appleCount ++;
    }
  }
