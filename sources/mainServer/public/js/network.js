@@ -67,7 +67,8 @@ var network = (function(){
         currentSegmentManager.socket.on('chunk-update', network.receiveChunkUpdate);
         currentSegmentManager.socket.on('position-update', logic.updateLocalPosition);
 
-        for (j in sortedChunks[segmentManagerIDs[i]]){
+        var currChunks = sortedChunks[segmentManagerIDs[i]];
+        for (var j=0; j<currChunks.length; j++){
           currentSegmentManager.socket.emit('subscribe-chunk', j);
         }
       }
@@ -88,7 +89,6 @@ var network = (function(){
           delete localTiles[currKey];
         }
       }
-      console.log(localTiles)
     }
   }
 })();

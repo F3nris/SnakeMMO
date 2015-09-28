@@ -103,8 +103,6 @@ var logic = (function(){
       logic.activeChunk = null;
       logic.localMap = {};
       logic.localPosition = {};
-
-      // TODO: unsubscribe-chunks
     }
   }
 })();

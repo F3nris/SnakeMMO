@@ -120,8 +120,18 @@ ChunkManager.prototype.spawnPlayer = function (playerID) {
 }
 
 ChunkManager.prototype.killPlayer = function (playerID) {
+  var localScope = this;
   this.players = this.players.filter(function(el){
-    return el.playerID !=  playerID;
+    var res = true;
+    if (el.playerID !=  playerID) {
+      res = true;
+    } else {
+      for (var j=0; j<localScope.chunks.length; j++) {
+          el.socket.leave(localScope.chunks[j].id);
+      }
+      res = false;
+    }
+    return res;
   });
 }
 
