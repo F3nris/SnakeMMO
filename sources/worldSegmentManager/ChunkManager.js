@@ -104,7 +104,9 @@ ChunkManager.prototype.update = function () {
 ChunkManager.prototype.addChunk = function (chunk) {
   console.log ("Received a new chunk to manage from mainServer:");
   console.log (" - - - X: "+chunk.x+" Y: "+chunk.y);
-  this.chunks.push(new Chunk(chunk.id, chunk.x, chunk.y, chunk.segmentManagerID, this));
+  var newChunk = new Chunk(chunk.id, chunk.x, chunk.y, chunk.segmentManagerID, this);
+  newChunk.copyExistingTiles(chunk.tiles);
+  this.chunks.push(newChunk);
 }
 
 ChunkManager.prototype.spawnPlayer = function (playerID) {
