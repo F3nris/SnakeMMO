@@ -3,7 +3,7 @@
  * can be either empty, an apple, a players head or a players body part.
  * This prototype is designed to save the respective information.
  *
- * Type: "body" | "apple" | "head"
+ * Type: "body" | "apple" | "head" | "wall"
  */
 function Tile (type, id, ttl) {
   this.type = type;
