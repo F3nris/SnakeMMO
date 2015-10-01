@@ -18,9 +18,6 @@ Chunk = Chunk.Chunk;
    this.minSize = 1;
    this.chunks = [];
    this.fillLevel;
-   this.boundaries = {
-     top : 0, bot : 0, left : 0, right : 0
-   }
  }
 
 /**
@@ -43,22 +40,10 @@ Chunk = Chunk.Chunk;
  */
  Map.prototype.addChunk = function (id, x, y, segmentManagerID) {
    var chunk = new Chunk(id, x, y, segmentManagerID);
-
-   // Check if this results in new boundaries
-   if (x < this.boundaries.left) {
-     this.boundaries.left = x;
-   } else if (x+CHUNK_SIZE > this.boundaries.right) {
-     this.boundaries.right = x + CHUNK_SIZE;
-   }
-
-   if (y < this.boundaries.top) {
-     this.boundaries.top = y;
-   } else if (y+CHUNK_SIZE > this.boundaries.bot) {
-     this.boundaries.bot = y + CHUNK_SIZE;
-   }
-
    // TODO: chunks sortiert einfügen?
    this.chunks.push(chunk);
+   chunk.initBorders(this.chunks);
+
    return chunk;
  }
 
