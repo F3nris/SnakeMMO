@@ -19,6 +19,62 @@ var Tile = require('./Tile.js').Tile;
 
  var CHUNK_SIZE = 25;
 
+ Chunk.prototype.initBorders = function (chunks) {
+   this.setBorder("top",true);
+   this.setBorder("bot",true);
+   this.setBorder("left",true);
+   this.setBorder("right",true);
+ }
+
+ Chunk.prototype.setBorder = function (key, isWall) {
+   console.log("test");
+   var sqChunkSize = CHUNK_SIZE * CHUNK_SIZE;
+
+   switch (key) {
+    case "top":
+      if (isWall) {
+        for (var i=0; i<sqChunkSize; i+=CHUNK_SIZE) {
+          this.tiles[i] = new Tile("wall",null);
+        }
+      } else {
+        // TODO: synchronized top border
+      }
+      break;
+    case "left":
+      if (isWall) {
+        for (var i=0; i<CHUNK_SIZE; i++) {
+          this.tiles[i] = new Tile("wall",null);
+        }
+      } else {
+        // TODO: synchronized top border
+      }
+      break;
+    case "bot":
+      if (isWall) {
+        for (var i=CHUNK_SIZE-1; i<sqChunkSize; i+=CHUNK_SIZE) {
+          this.tiles[i] = new Tile("wall",null);
+        }
+      } else {
+        // TODO: synchronized top border
+      }
+      break;
+    case "right":
+      if (isWall) {
+        for (var i=sqChunkSize - CHUNK_SIZE; i<sqChunkSize; i++) {
+          this.tiles[i] = new Tile("wall",null);
+        }
+      } else {
+        // TODO: synchronized top border
+      }
+      break;
+
+   }
+ }
+
+ Chunk.prototype.copyExistingTiles = function (existingTiles) {
+   this.tiles = existingTiles;
+ }
+
  Chunk.prototype.spawnPlayerAtFreeSpot = function(playerID, length) {
    var coordinates = { 'x' : null, 'y' : null };
    var sqChunkSize = CHUNK_SIZE * CHUNK_SIZE;
@@ -154,6 +210,7 @@ var Tile = require('./Tile.js').Tile;
        this.appleCount--;
      } else { // Bad news, you hit something
        // TODO: Kill, Callback needed!
+       collision = true;
        this.parent.mainServerSocket.emit('kill', currentPlayer.playerID);
      }
    }
