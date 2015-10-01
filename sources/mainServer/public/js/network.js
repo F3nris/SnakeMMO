@@ -4,7 +4,7 @@ var network = (function(){
     map : null,
     segmentManagers : [],
     init : function() {
-      network.mainServerSocket = io.connect('http://localhost:4000');
+      network.mainServerSocket = io.connect('http://192.168.0.103:4000');
 
       // Introduce yourself to the mainServer
       network.mainServerSocket.emit ('introduction', {'role' : 'player'});

@@ -96,6 +96,10 @@ var visualization = (function(){
     drawApple : function (x,y) {
       this.ctx.drawImage(this.appleImg, x, y,1,1);
     },
+    drawWall : function (x,y) {
+      this.ctx.fillStyle = "#3f3f3f";
+      this.ctx.fillRect(x,y,1,1);
+    },
     drawMap : function () {
       this.ctx.save();
       this.ctx.scale(this.tileSize,this.tileSize);
@@ -104,7 +108,7 @@ var visualization = (function(){
       var offsetX = logic.localPosition.x;
       var offsetY = logic.localPosition.y;
 
-      var boundaries = network.map.boundaries;
+      /*var boundaries = network.map.boundaries;
 
       // Draw Boundaries
       this.ctx.strokeStyle="#3c3c3c";
@@ -117,6 +121,7 @@ var visualization = (function(){
       this.ctx.lineTo(boundaries.left-0.5-offsetX,boundaries.bot+0.5-offsetY);
       this.ctx.closePath();
       this.ctx.stroke();
+      */
 
       var keyArray = Object.keys(logic.localMap);
       for (var i=0; i<keyArray.length; i++) {
@@ -141,6 +146,8 @@ var visualization = (function(){
             this.drawSnakeHead(currentX, currentY, color);
           } else if (currentTile.type === "apple") {
             this.drawApple(currentX, currentY);
+          } else if (currentTile.type === "wall") {
+            this.drawWall(currentX,currentY);
           }
         }
       }
