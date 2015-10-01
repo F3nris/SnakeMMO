@@ -70,6 +70,8 @@ ApplicationLogic.prototype.addClient = function (type, address, socket) {
       // Rearrange chunks, new work power is available
       // TODO: Add functionality
     }
+
+    socket.emit('map', this.map);
     console.log("Now "+this.segmentManagers.length+" segmentManager(s) are connected");
   }
 };
