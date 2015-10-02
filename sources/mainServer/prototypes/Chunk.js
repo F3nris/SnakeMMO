@@ -19,7 +19,8 @@ var Tile = require('./Tile.js').Tile;
 
  var CHUNK_SIZE = 25;
 
- Chunk.prototype.initBorders = function (chunks) {
+ Chunk.prototype.checkBorders = function (chunks) {
+   // TODO: check for neighbours
    this.setBorder("top",true);
    this.setBorder("bot",true);
    this.setBorder("left",true);
@@ -27,12 +28,11 @@ var Tile = require('./Tile.js').Tile;
  }
 
  Chunk.prototype.setBorder = function (key, isWall) {
-   console.log("test");
    var sqChunkSize = CHUNK_SIZE * CHUNK_SIZE;
 
    switch (key) {
     case "top":
-      if (isWall) {
+      if (isWall || isWall == undefined) {
         for (var i=0; i<sqChunkSize; i+=CHUNK_SIZE) {
           this.tiles[i] = new Tile("wall",null);
         }
@@ -41,7 +41,7 @@ var Tile = require('./Tile.js').Tile;
       }
       break;
     case "left":
-      if (isWall) {
+      if (isWall || isWall == undefined) {
         for (var i=0; i<CHUNK_SIZE; i++) {
           this.tiles[i] = new Tile("wall",null);
         }
@@ -50,7 +50,7 @@ var Tile = require('./Tile.js').Tile;
       }
       break;
     case "bot":
-      if (isWall) {
+      if (isWall || isWall == undefined) {
         for (var i=CHUNK_SIZE-1; i<sqChunkSize; i+=CHUNK_SIZE) {
           this.tiles[i] = new Tile("wall",null);
         }
@@ -59,7 +59,7 @@ var Tile = require('./Tile.js').Tile;
       }
       break;
     case "right":
-      if (isWall) {
+      if (isWall || isWall == undefined) {
         for (var i=sqChunkSize - CHUNK_SIZE; i<sqChunkSize; i++) {
           this.tiles[i] = new Tile("wall",null);
         }
@@ -202,8 +202,11 @@ var Tile = require('./Tile.js').Tile;
  Chunk.prototype.checkCollision = function (currentPlayer, currentX, currentY) {
    var collision = false;
    var tileKey = (currentX * CHUNK_SIZE) + currentY;
+   // TODO check Neighbors if x > CHUNK_SIZE oder x < 0
+   // TODO check Neighbors if y > CHUNK_SIZE oder y < 0
    var affectedTile = this.tiles[tileKey];
    if (affectedTile) {
+     console.log(affectedTile);
      // Collectable, no real collsion
      if (affectedTile.type === "apple") {
        currentPlayer.length ++;

@@ -15,7 +15,7 @@ Chunk = Chunk.Chunk;
  */
  function Map () {
    this.chunkID=0;
-   this.minSize = 1;
+   this.minSize = 2;
    this.chunks = [];
    this.fillLevel;
  }
@@ -25,7 +25,7 @@ Chunk = Chunk.Chunk;
  * the minSize of chunks and add them to the segmentManager that is available.
  */
  Map.prototype.init = function (firstSegmentManager) {
-   var loopSize = this.minSize / 2;
+   var loopSize = this.minSize;
    for (var i=0; i<loopSize; i++) {
      for (var j=0; j<loopSize; j++) {
        var c = this.addChunk(this.chunkID++, i*CHUNK_SIZE, j*CHUNK_SIZE, firstSegmentManager.id);
@@ -42,7 +42,7 @@ Chunk = Chunk.Chunk;
    var chunk = new Chunk(id, x, y, segmentManagerID);
    // TODO: chunks sortiert einfügen?
    this.chunks.push(chunk);
-   chunk.initBorders(this.chunks);
+   //chunk.initBorders(this.chunks);
 
    return chunk;
  }
