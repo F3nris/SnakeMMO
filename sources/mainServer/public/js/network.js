@@ -69,7 +69,7 @@ var network = (function(){
 
         var currChunks = sortedChunks[segmentManagerIDs[i]];
         for (var j=0; j<currChunks.length; j++){
-          currentSegmentManager.socket.emit('subscribe-chunk', j);
+          currentSegmentManager.socket.emit('subscribe-chunk', currChunks[j]);
         }
       }
     },
@@ -89,6 +89,9 @@ var network = (function(){
           delete localTiles[currKey];
         }
       }
+    },
+    killSelf : function () {
+      network.mainServerSocket.emit('kill', logic.playerID);
     }
   }
 })();

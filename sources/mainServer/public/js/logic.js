@@ -32,7 +32,7 @@ var logic = (function(){
         } else if (key == 40 & (logic.lastDirectionChange + 250) < Date.now()) {
           direction = 3;
         } else if (key == 27) {
-          // TODO: Send kill to server
+          network.killSelf();
           logic.inMenu = true;
         } else {
           console.log("Tastencode:"+key);
