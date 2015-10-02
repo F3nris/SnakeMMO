@@ -6,10 +6,14 @@ var ip = require('my-local-ip');
 var config = require('./config.js');
 var ChunkManager = require('./ChunkManager.js').ChunkManager;
 
+var address = "";
 findPort(config.IO_PORT_MIN, config.IO_PORT_MAX, function(ports) {
-  console.log("Starting SegmentManager on Port "+ports[0]);
-  ioServer.listen(ports[0]);
-  ioClient.emit("introduction", { 'role': 'segmentmanager', 'ip': ip(), 'port': ports[0]});
-});
+  var ipAdr = ip();
+  var port = ports[0];
+  address = ipAdr + ":" + port;
+  console.log("Starting SegmentManager on Port "+port);
+  ioServer.listen(port);
+  ioClient.emit("introduction", { 'role': 'segmentmanager', 'ip': ipAdr, 'port': port});
 
-new ChunkManager(ioClient, ioServer);
+  new ChunkManager(ioClient, ioServer, address);
+});
