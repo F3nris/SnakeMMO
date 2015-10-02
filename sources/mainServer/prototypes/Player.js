@@ -23,6 +23,10 @@ function Player (id, socket, parent) {
       console.log("Player disconnected");
       localScope.parent.removeClient("player",localScope.id);
     });
+
+    this.socket.on('kill', function (playerID) {
+      localScope.parent.killPlayer (playerID);
+    })
   };
 
   Player.prototype.flatten = function() {

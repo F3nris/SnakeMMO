@@ -26,7 +26,7 @@ function SegmentManager (id, address, socket, parent) {
 
     this.socket.on('kill', function (playerID) {
       localScope.parent.killPlayer (playerID);
-    })
+    });
   };
 
   SegmentManager.prototype.flatten = function() {

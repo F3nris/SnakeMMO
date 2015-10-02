@@ -24,14 +24,15 @@ Chunk = Chunk.Chunk;
  * This method gets called upon the first connected segmentmanager. It will generate
  * the minSize of chunks and add them to the segmentManager that is available.
  */
- Map.prototype.init = function (firstSegmentManager) {
-   var loopSize = this.minSize;
-   for (var i=0; i<loopSize; i++) {
-     for (var j=0; j<loopSize; j++) {
-       var c = this.addChunk(this.chunkID++, i*CHUNK_SIZE, j*CHUNK_SIZE, firstSegmentManager.id);
-       firstSegmentManager.socket.emit('chunk', c);
-     }
-   }
+ Map.prototype.init = function (segmentManagerID) {
+   this.addChunk(this.chunkID++, 0, 0, segmentManagerID);
+   this.addChunk(this.chunkID++, 0, CHUNK_SIZE+CHUNK_SIZE, segmentManagerID);
+   this.addChunk(this.chunkID++, CHUNK_SIZE, 0, segmentManagerID);
+   this.addChunk(this.chunkID++, CHUNK_SIZE, CHUNK_SIZE+CHUNK_SIZE, segmentManagerID);
+   this.addChunk(this.chunkID++, CHUNK_SIZE+CHUNK_SIZE, 0, segmentManagerID);
+   this.addChunk(this.chunkID++, CHUNK_SIZE+CHUNK_SIZE, CHUNK_SIZE, segmentManagerID);
+   this.addChunk(this.chunkID++, CHUNK_SIZE+CHUNK_SIZE, CHUNK_SIZE+CHUNK_SIZE, segmentManagerID);
+   this.addChunk(this.chunkID++, 0, CHUNK_SIZE, segmentManagerID);
  }
 
 /**
