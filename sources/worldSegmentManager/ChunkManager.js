@@ -91,18 +91,22 @@ ChunkManager.prototype.initPlayerServerSocket = function() {
         return data.playerID === player.playerID;
       });
 
-      var newDirection = data.direction;
+      if (!player.movementLocked) {
+        player.movementLocked = true;
 
-      if (player.direction === 1 && (newDirection === 2 || newDirection === 4)) {
-        player.direction = newDirection;
-      } else if (player.direction === 2 && (newDirection === 1 || newDirection === 3)) {
-        player.direction = newDirection;
-      } else if (player.direction === 3 && (newDirection === 2 || newDirection === 4)) {
-        player.direction = newDirection;
-      } else if (player.direction === 4 && (newDirection === 1 || newDirection === 3)) {
-        player.direction = newDirection;
-      } else if (player.direction === 0) {
-        player.direction = newDirection;
+        var newDirection = data.direction;
+
+        if (player.direction === 1 && (newDirection === 2 || newDirection === 4)) {
+          player.direction = newDirection;
+        } else if (player.direction === 2 && (newDirection === 1 || newDirection === 3)) {
+          player.direction = newDirection;
+        } else if (player.direction === 3 && (newDirection === 2 || newDirection === 4)) {
+          player.direction = newDirection;
+        } else if (player.direction === 4 && (newDirection === 1 || newDirection === 3)) {
+          player.direction = newDirection;
+        } else if (player.direction === 0) {
+          player.direction = newDirection;
+        }
       }
     });
 
@@ -118,6 +122,10 @@ ChunkManager.prototype.update = function () {
   // Decrement all ttls
   for (var i=0; i<this.chunks.length; i++) {
     this.chunks[i].updatePositionsAndTTLs(this.players);
+  }
+  // Unlock the movement of all players
+  for (var j=0; j<this.players.length; j++) {
+    this.players[j].movementLocked = false;
   }
 }
 
