@@ -17,6 +17,7 @@ function ChunkManager (socket, server, address) {
 
   this.initMainServerSocket();
   this.initPlayerServerSocket();
+  this.currentUpdateCycle = 0;
 }
 
 ChunkManager.prototype.initMainServerSocket = function() {
@@ -119,6 +120,7 @@ ChunkManager.prototype.initPlayerServerSocket = function() {
 }
 
 ChunkManager.prototype.update = function () {
+  this.currentUpdateCycle ++;
   // Decrement all ttls
   for (var i=0; i<this.chunks.length; i++) {
     this.chunks[i].updatePositionsAndTTLs(this.players);

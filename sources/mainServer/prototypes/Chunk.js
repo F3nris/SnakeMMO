@@ -86,7 +86,7 @@ var Tile = require('./Tile.js').Tile;
      // A spot is free, try to find it
      for (var i=0; i<sqChunkSize; i++) {
        if (!this.tiles[i]) {
-         this.tiles[i] = new Tile("head",playerID,length);
+         this.tiles[i] = new Tile("head",playerID,length,this.parent.currentUpdateCycle);
 
          var x = Math.floor(i/CHUNK_SIZE);
          var y = i % CHUNK_SIZE;
@@ -114,27 +114,32 @@ var Tile = require('./Tile.js').Tile;
    for (var i=0; i<tileKeys.length; i++) {
      var currentTileKey = tileKeys[i];
      var currentTile = this.tiles[currentTileKey];
-     var currentPlayerID = currentTile.playerID;
+     if (currentTile.lastUpdated < this.parent.currentUpdateCycle) {
+       currentTile.lastUpdated = this.parent.currentUpdateCycle;
+       var currentPlayerID = currentTile.playerID;
 
-     var currentPlayer = players.find(function(player){
-       return currentPlayerID === player.playerID;
-     });
+       var currentPlayer = players.find(function(player){
+         return currentPlayerID === player.playerID;
+       });
 
-     if (currentTile.type === "body") {
-       if (this.decreaseTTL(currentTile) || !currentPlayer) {
-         updatedChunk.tiles[currentTileKey] = null;
-         delete this.tiles[currentTileKey];
-       }
-     } else if (currentTile.type === "head") {
-       if (!currentPlayer) {
-         updatedChunk.tiles[currentTileKey] = null;
-         delete this.tiles[currentTileKey];
-       } else {
-         // Update Position
-         this.updateSnakeHead(currentPlayer, currentTile, currentTileKey, updatedChunk);
+       if (currentTile.type === "body") {
+         if (this.decreaseTTL(currentTile) || !currentPlayer) {
+           updatedChunk.tiles[currentTileKey] = null;
+           delete this.tiles[currentTileKey];
+         }
+       } else if (currentTile.type === "head") {
+         if (!currentPlayer) {
+           updatedChunk.tiles[currentTileKey] = null;
+           delete this.tiles[currentTileKey];
+         } else {
+           // Update Position
+           this.updateSnakeHead(currentPlayer, currentTile, currentTileKey, updatedChunk);
+         }
        }
      }
    }
+
+   // TODO: SYNC NEIGBORS
 
    this.parent.playerServerSocket.to(this.id.toString()).emit('chunk-update', updatedChunk);
  };
@@ -170,7 +175,8 @@ var Tile = require('./Tile.js').Tile;
          var t = new Tile(
            "head",
            currentPlayer.playerID,
-           currentPlayer.length
+           currentPlayer.length,
+           this.parent.currentUpdateCycle
          );
          updatedChunk.tiles[newKey] = t;
          this.tiles[newKey] = t;
@@ -211,6 +217,9 @@ var Tile = require('./Tile.js').Tile;
      case "incoming-player":
       this.handleIncomingPlayer(data.playerID, data.playerLength, data.x, data.y);
       break;
+    case "sync-border":
+      // TODO: Add functionaliy to sync the border
+      break;
    }
  }
 
@@ -220,7 +229,14 @@ var Tile = require('./Tile.js').Tile;
      this.appleCount --;
    }
    console.log ("Incomin id: "+this.id);
-   this.tiles[affectedTileKey] = new Tile("head",playerID,playerLength);
+   this.tiles[affectedTileKey] = new Tile("head",playerID,playerLength,this.parent.currentUpdateCycle);
+
+   var updatedChunk = {
+     'id': this.id,
+     'tiles': {}
+   };
+   updatedChunk[affectedTileKey] = this.tiles[affectedTileKey];
+   this.parent.playerServerSocket.to(this.id.toString()).emit('chunk-update', updatedChunk);
  }
 
  Chunk.prototype.decreaseTTL = function (tile) {
@@ -284,7 +300,7 @@ var Tile = require('./Tile.js').Tile;
  Chunk.prototype.spawnApple = function (updatedChunk) {
    var index = Math.floor(Math.random() * CHUNK_SIZE * CHUNK_SIZE);
    if (!this.tiles[index]) {
-     var apple = new Tile("apple",null, -1);
+     var apple = new Tile("apple",null, -1, this.parent.currentUpdateCycle);
      this.tiles[index] = apple;
      updatedChunk.tiles[index] = apple;
      this.appleCount ++;
