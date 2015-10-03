@@ -12,7 +12,10 @@ var visualization = (function(){
       if (this.colorMap[id]) {
         color = this.colorMap[id];
       } else {
-        color = '#'+Math.floor(Math.random()*16777215).toString(16);
+        color = '#'+(Math.random()*0xFFFFFF<<0).toString(16);
+        while (color.length < 7) {
+          color += "0";
+        }
         this.colorMap[id] = color;
       }
       return color;
@@ -107,21 +110,6 @@ var visualization = (function(){
 
       var offsetX = logic.localPosition.x;
       var offsetY = logic.localPosition.y;
-
-      /*var boundaries = network.map.boundaries;
-
-      // Draw Boundaries
-      this.ctx.strokeStyle="#3c3c3c";
-      this.ctx.lineWidth=1;
-
-      this.ctx.beginPath();
-      this.ctx.moveTo(boundaries.left-0.5-offsetX,boundaries.top-0.5-offsetY);
-      this.ctx.lineTo(boundaries.right+0.5-offsetX,boundaries.top-0.5-offsetY);
-      this.ctx.lineTo(boundaries.right+0.5-offsetX,boundaries.bot+0.5-offsetY);
-      this.ctx.lineTo(boundaries.left-0.5-offsetX,boundaries.bot+0.5-offsetY);
-      this.ctx.closePath();
-      this.ctx.stroke();
-      */
 
       var keyArray = Object.keys(logic.localMap);
       for (var i=0; i<keyArray.length; i++) {
