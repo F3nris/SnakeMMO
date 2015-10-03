@@ -24,52 +24,27 @@ var Tile = require('./Tile.js').Tile;
    var sqChunkSize = CHUNK_SIZE * CHUNK_SIZE;
 
    var socket = null;
-   var isWall = false;
    if (neighbor == undefined) {
-     isWall = true;
-   }
-
-   switch (key) {
-    case "top":
-      if (isWall) {
-        for (var i=0; i<sqChunkSize; i+=CHUNK_SIZE) {
-          this.tiles[i] = new Tile("wall",null);
-        }
-      } else {
-        this.top = {};
-        this.topNeighbor = localNeighbor;
-      }
-      break;
-    case "left":
-      if (isWall) {
-        for (var i=0; i<CHUNK_SIZE; i++) {
-          this.tiles[i] = new Tile("wall",null);
-        }
-      } else {
-        this.left = {};
-        this.leftNeighbor = localNeighbor;
-      }
-      break;
-    case "bot":
-      if (isWall) {
-        for (var i=CHUNK_SIZE-1; i<sqChunkSize; i+=CHUNK_SIZE) {
-          this.tiles[i] = new Tile("wall",null);
-        }
-      } else {
-        this.bot = {};
-        this.botNeighbor = localNeighbor;
-      }
-      break;
-    case "right":
-      if (isWall) {
-        for (var i=sqChunkSize - CHUNK_SIZE; i<sqChunkSize; i++) {
-          this.tiles[i] = new Tile("wall",null);
-        }
-      } else {
-        this.right = {};
-        this.rightNeighbor = localNeighbor;
-      }
-      break;
+     if (key === "top") {
+       for (var i=0; i<sqChunkSize; i+=CHUNK_SIZE) {
+         this.tiles[i] = new Tile("wall",null);
+       }
+     } else if (key === "left") {
+       for (var i=0; i<CHUNK_SIZE; i++) {
+         this.tiles[i] = new Tile("wall",null);
+       }
+     } else if (key === "bot") {
+       for (var i=CHUNK_SIZE-1; i<sqChunkSize; i+=CHUNK_SIZE) {
+         this.tiles[i] = new Tile("wall",null);
+       }
+     } else if (key === "right") {
+       for (var i=sqChunkSize - CHUNK_SIZE; i<sqChunkSize; i++) {
+         this.tiles[i] = new Tile("wall",null);
+       }
+     }
+   } else {
+     this[key] = {};
+     this[key+"Neighbor"] = localNeighbor;
    }
  }
 
@@ -139,7 +114,10 @@ var Tile = require('./Tile.js').Tile;
      }
    }
 
-   // TODO: SYNC NEIGBORS
+   // TODO: send sync to neighbors
+   if (this.top) {
+     //updatedChunk.tiles
+   }
 
    this.parent.playerServerSocket.to(this.id.toString()).emit('chunk-update', updatedChunk);
  };
