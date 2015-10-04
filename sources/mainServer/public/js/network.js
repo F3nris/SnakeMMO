@@ -12,6 +12,7 @@ var network = (function(){
       // Receive the map
       network.mainServerSocket.on ('map', function(mapUpdate){
         network.map = mapUpdate;
+        logic.calculateRelevantChunks();
       });
 
       // Receive segmentManagers
@@ -41,7 +42,6 @@ var network = (function(){
       network.mainServerSocket.emit('play');
     },
     sendDirection : function (direction) {
-      console.log("SEND_DIRECTION")
       // send direction change to active chunk
       var segmentManager = network.segmentManagers.find (function(el){
         return el.id === logic.activeChunk.segmentManagerID;
