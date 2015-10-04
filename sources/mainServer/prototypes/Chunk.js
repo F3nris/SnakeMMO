@@ -18,6 +18,12 @@ var Tile = require('./Tile.js').Tile;
  }
 
  var CHUNK_SIZE = 25;
+ var OPPOSITE_DIRECTION = {
+   "top": "bot",
+   "bot": "top",
+   "left": "right",
+   "right": "left"
+ };
 
  Chunk.prototype.setBorder = function (key, neighbor, localNeighbor) {
    var localScope = this;
@@ -53,7 +59,6 @@ var Tile = require('./Tile.js').Tile;
  }
 
  Chunk.prototype.spawnPlayerAtFreeSpot = function(playerID, length) {
-   //console.log(this.chunks);
    var coordinates = { 'x' : null, 'y' : null };
    var sqChunkSize = CHUNK_SIZE * CHUNK_SIZE;
 
@@ -67,6 +72,7 @@ var Tile = require('./Tile.js').Tile;
          var y = i % CHUNK_SIZE;
 
          coordinates.x = x+this.x; coordinates.y = y+this.y;
+
          return coordinates;
        }
      }
@@ -114,13 +120,38 @@ var Tile = require('./Tile.js').Tile;
      }
    }
 
-   // TODO: send sync to neighbors
-   if (this.top) {
-     //updatedChunk.tiles
-   }
+   this.syncBorder("top",function(el){return (parseFloat(el) % CHUNK_SIZE) === 0;},true);
+   this.syncBorder("bot",function(el){return ((parseFloat(el)+1) % CHUNK_SIZE) === 0;},true);
+   this.syncBorder("left",function(el){return (parseFloat(el) < CHUNK_SIZE);},false);
+   this.syncBorder("right",function(el){return (parseFloat(el) >= CHUNK_SIZE*(CHUNK_SIZE-1))},false);
 
-   this.parent.playerServerSocket.to(this.id.toString()).emit('chunk-update', updatedChunk);
+    if (Object.keys(updatedChunk.tiles).length) {
+        this.parent.playerServerSocket.to(this.id.toString()).emit('chunk-update', updatedChunk);
+    }
  };
+
+ Chunk.prototype.syncBorder = function(direction, filterFunction, extractAsRow) {
+   if (this[direction]) {
+     var allTileKeys = Object.keys(this.tiles);
+     var neededKeys = allTileKeys.filter(filterFunction);
+     var result = {
+       "direction":OPPOSITE_DIRECTION[direction],
+       "tiles":{}
+     };
+     for (var i=0; i<neededKeys.length; i++){
+       var currentTileKey = neededKeys[i];
+       var currentTile = this.tiles[currentTileKey];
+       var newKey = currentTileKey % CHUNK_SIZE;
+       if (extractAsRow) {
+         newKey = Math.floor(currentTileKey / CHUNK_SIZE);
+       }
+       result.tiles[newKey] = currentTile;
+     }
+     if (Object.keys(result.tiles).length) {
+       this[direction+"Neighbor"].neighborHandler("sync-border", result);
+     }
+   }
+ }
 
  Chunk.prototype.updateSnakeHead = function (currentPlayer, currentTile, currentTileKey, updatedChunk) {
    var moved = true;
@@ -167,9 +198,7 @@ var Tile = require('./Tile.js').Tile;
        } else {
          var foreignX = (currentX + CHUNK_SIZE) % CHUNK_SIZE;
          var foreignY = (currentY + CHUNK_SIZE) % CHUNK_SIZE;
-         console.log("FX: "+foreignX+" FY: "+foreignY)
 
-         console.log("Outgoing ID: "+this.id);
          this[affectedTile.foreignOrigin+"Neighbor"].neighborHandler("incoming-player", {
            'playerID': currentPlayer.playerID,
            'playerLength': currentPlayer.length,
@@ -178,7 +207,6 @@ var Tile = require('./Tile.js').Tile;
          });
        }
      }
-
      // Make a body where the head was
      if (this.decreaseTTL(currentTile)) {
        updatedChunk.tiles[currentTileKey] = null;
@@ -196,7 +224,8 @@ var Tile = require('./Tile.js').Tile;
       this.handleIncomingPlayer(data.playerID, data.playerLength, data.x, data.y);
       break;
     case "sync-border":
-      // TODO: Add functionaliy to sync the border
+      console.log(data);
+      this[data.direction] = data.tiles;
       break;
    }
  }
@@ -213,7 +242,7 @@ var Tile = require('./Tile.js').Tile;
      'id': this.id,
      'tiles': {}
    };
-   updatedChunk[affectedTileKey] = this.tiles[affectedTileKey];
+   updatedChunk.tiles[affectedTileKey] = this.tiles[affectedTileKey];
    this.parent.playerServerSocket.to(this.id.toString()).emit('chunk-update', updatedChunk);
  }
 
