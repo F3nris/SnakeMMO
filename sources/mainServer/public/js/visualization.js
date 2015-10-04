@@ -46,7 +46,7 @@ var visualization = (function(){
     },
     drawMenuBackground : function () {
       this.ctx.save();
-      this.ctx.scale(25,25);
+      this.ctx.scale(visualization.tileSize,visualization.tileSize);
 
       this.drawApple(3,3);
       this.drawApple(15,15);
@@ -123,8 +123,8 @@ var visualization = (function(){
           var currentTileKey = tilesKeyArray[j];
 
           // calculate coordinates
-          var currentX = (chunkOffsetX + Math.floor(currentTileKey / 25)) - offsetX;
-          var currentY = (chunkOffsetY + (currentTileKey % 25)) - offsetY;
+          var currentX = (chunkOffsetX + Math.floor(currentTileKey / logic.CHUNK_SIZE)) - offsetX;
+          var currentY = (chunkOffsetY + (currentTileKey % logic.CHUNK_SIZE)) - offsetY;
 
           var color = visualization.getOrGenerateColor(currentTile.playerID);
 
