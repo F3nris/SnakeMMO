@@ -14,7 +14,7 @@ Chunk = Chunk.Chunk;
  * creased or decreased (or kept).
  */
  function Map () {
-   this.chunkID=0;
+   this.nextChunkID=0;
    this.minSize = 2;
    this.chunks = [];
    this.fillLevel;
@@ -25,14 +25,14 @@ Chunk = Chunk.Chunk;
  * the minSize of chunks and add them to the segmentManager that is available.
  */
  Map.prototype.init = function (segmentManagerID) {
-   this.addChunk(this.chunkID++, 0, 0, segmentManagerID);
-   this.addChunk(this.chunkID++, 0, CHUNK_SIZE+CHUNK_SIZE, segmentManagerID);
-   this.addChunk(this.chunkID++, CHUNK_SIZE, 0, segmentManagerID);
-   this.addChunk(this.chunkID++, CHUNK_SIZE, CHUNK_SIZE+CHUNK_SIZE, segmentManagerID);
-   this.addChunk(this.chunkID++, CHUNK_SIZE+CHUNK_SIZE, 0, segmentManagerID);
-   this.addChunk(this.chunkID++, CHUNK_SIZE+CHUNK_SIZE, CHUNK_SIZE, segmentManagerID);
-   this.addChunk(this.chunkID++, CHUNK_SIZE+CHUNK_SIZE, CHUNK_SIZE+CHUNK_SIZE, segmentManagerID);
-   this.addChunk(this.chunkID++, 0, CHUNK_SIZE, segmentManagerID);
+   this.addChunk(this.nextChunkID++, 0, 0, segmentManagerID);
+  //  this.addChunk(this.nextChunkID++, 0, CHUNK_SIZE+CHUNK_SIZE, segmentManagerID);
+   this.addChunk(this.nextChunkID++, CHUNK_SIZE, 0, segmentManagerID);
+  //  this.addChunk(this.nextChunkID++, CHUNK_SIZE, CHUNK_SIZE+CHUNK_SIZE, segmentManagerID);
+  //  this.addChunk(this.nextChunkID++, CHUNK_SIZE+CHUNK_SIZE, 0, segmentManagerID);
+  //  this.addChunk(this.nextChunkID++, CHUNK_SIZE+CHUNK_SIZE, CHUNK_SIZE, segmentManagerID);
+  //  this.addChunk(this.nextChunkID++, CHUNK_SIZE+CHUNK_SIZE, CHUNK_SIZE+CHUNK_SIZE, segmentManagerID);
+  // this.addChunk(this.nextChunkID++, 0, CHUNK_SIZE, segmentManagerID);
  }
 
 /**
