@@ -4,7 +4,7 @@ var network = (function(){
     map : null,
     segmentManagers : [],
     init : function() {
-      network.mainServerSocket = io.connect('http://192.168.0.103:4000');
+      network.mainServerSocket = io.connect('http://192.168.0.101:4000');
 
       // Introduce yourself to the mainServer
       network.mainServerSocket.emit ('introduction', {'role' : 'player'});
@@ -12,8 +12,6 @@ var network = (function(){
       // Receive the map
       network.mainServerSocket.on ('map', function(mapUpdate){
         network.map = mapUpdate;
-        //logic.generateLocalMap();
-        // TODO network.manageConnections();
       });
 
       // Receive segmentManagers
@@ -43,6 +41,7 @@ var network = (function(){
       network.mainServerSocket.emit('play');
     },
     sendDirection : function (direction) {
+      console.log("SEND_DIRECTION")
       // send direction change to active chunk
       var segmentManager = network.segmentManagers.find (function(el){
         return el.id === logic.activeChunk.segmentManagerID;
