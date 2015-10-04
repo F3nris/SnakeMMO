@@ -1,5 +1,6 @@
 var logic = (function(){
   return {
+    CHUNK_SIZE : 25
     inMenu : true,
     lastDirectionChange : Date.now(),
     activeChunk : null,
@@ -63,8 +64,8 @@ var logic = (function(){
       logic.localPosition.y = coordinates.y;
 
       // calc active chunk
-      var x = Math.floor(logic.localPosition.x/25)*25;
-      var y = Math.floor(logic.localPosition.y/25)*25;
+      var x = Math.floor(logic.localPosition.x/logic.CHUNK_SIZE)*logic.CHUNK_SIZE;
+      var y = Math.floor(logic.localPosition.y/logic.CHUNK_SIZE)*logic.CHUNK_SIZE;
 
       var newActiveChunk = network.map.chunks.filter(function(el){
         return (el.x === x) && (el.y === y);
@@ -76,12 +77,12 @@ var logic = (function(){
       }
     },
     calculateRelevantChunks : function () {
-      var x = Math.floor(logic.localPosition.x/25)*25;
-      var y = Math.floor(logic.localPosition.y/25)*25;
+      var x = Math.floor(logic.localPosition.x/logic.CHUNK_SIZE)*logic.CHUNK_SIZE;
+      var y = Math.floor(logic.localPosition.y/logic.CHUNK_SIZE)*logic.CHUNK_SIZE;
 
       var relevantChunks = network.map.chunks.filter(function(el){
-        return (el.x === x || el.x === x+25 || el.x === x-25)
-          && (el.y === y || el.y === y+25 || el.y === y-25);
+        return (el.x === x || el.x === x+logic.CHUNK_SIZE || el.x === x-logic.CHUNK_SIZE)
+          && (el.y === y || el.y === y+logic.CHUNK_SIZE || el.y === y-logic.CHUNK_SIZE);
       });
 
       var chunksSortedBySegmentManager = {};
