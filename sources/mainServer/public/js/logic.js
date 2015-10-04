@@ -1,6 +1,6 @@
 var logic = (function(){
   return {
-    CHUNK_SIZE : 25
+    CHUNK_SIZE : 25,
     inMenu : true,
     lastDirectionChange : Date.now(),
     activeChunk : null,
