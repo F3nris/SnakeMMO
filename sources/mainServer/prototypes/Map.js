@@ -26,14 +26,29 @@ Chunk = Chunk.Chunk;
  */
  Map.prototype.init = function (segmentManagerID) {
    this.addChunk(this.nextChunkID++, 0, 0, segmentManagerID);
-  //  this.addChunk(this.nextChunkID++, 0, CHUNK_SIZE+CHUNK_SIZE, segmentManagerID);
-   this.addChunk(this.nextChunkID++, CHUNK_SIZE, 0, segmentManagerID);
+  //   this.addChunk(this.nextChunkID++, 0, CHUNK_SIZE+CHUNK_SIZE, segmentManagerID);
+  //  this.addChunk(this.nextChunkID++, CHUNK_SIZE, 0, segmentManagerID);
   //  this.addChunk(this.nextChunkID++, CHUNK_SIZE, CHUNK_SIZE+CHUNK_SIZE, segmentManagerID);
   //  this.addChunk(this.nextChunkID++, CHUNK_SIZE+CHUNK_SIZE, 0, segmentManagerID);
   //  this.addChunk(this.nextChunkID++, CHUNK_SIZE+CHUNK_SIZE, CHUNK_SIZE, segmentManagerID);
   //  this.addChunk(this.nextChunkID++, CHUNK_SIZE+CHUNK_SIZE, CHUNK_SIZE+CHUNK_SIZE, segmentManagerID);
   // this.addChunk(this.nextChunkID++, 0, CHUNK_SIZE, segmentManagerID);
- }
+  //this.addChunk(this.nextChunkID++, CHUNK_SIZE, CHUNK_SIZE, segmentManagerID);
+}
+
+Map.prototype.rearrangeChunks = function (segmentManagers) {
+  var numOfChunks = this.chunks.length;
+  var numOfSegmentManagers = segmentManagers.length;
+  var numOfAssignedChunks = 0;
+
+  for (var i=0; i< numOfSegmentManagers; i++) {
+    //for (var j=0; j<)
+  }
+}
+
+Map.prototype.tmp = function(sID) {
+  this.addChunk(this.nextChunkID++, CHUNK_SIZE, 0, sID);
+}
 
 /**
  * Adds a Chunk at the respective x/y coordinates and assigns the id of
@@ -43,7 +58,6 @@ Chunk = Chunk.Chunk;
    var chunk = new Chunk(id, x, y, segmentManagerID);
    // TODO: chunks sortiert einfügen?
    this.chunks.push(chunk);
-   //chunk.initBorders(this.chunks);
 
    return chunk;
  }

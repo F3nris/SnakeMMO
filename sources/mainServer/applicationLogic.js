@@ -62,22 +62,29 @@ ApplicationLogic.prototype.addClient = function (type, address, socket) {
     this.segmentManagers.push(newSegmentmanager);
     this.flattenedSegmentManagers.push(newSegmentmanager.flatten());
 
-    socket.emit('segment-managers', this.flattenedSegmentManagers);
+    this.io.sockets.emit('segment-managers', this.flattenedSegmentManagers);
 
     if (this.segmentManagers.length === 1) {
       // First segmentmanager, init map
       this.map = new Map();
       this.map.init(this.segmentManagers[0].id);
-      socket.emit('map', this.map);
 
       for (var i=0; i<this.map.chunks.length; i++) {
         socket.emit('chunk', this.map.chunks[i]);
       }
+      socket.emit('map', this.map);
     } else {
+      this.map.tmp(newSegmentmanager.id);
+      socket.emit('chunk', this.map.chunks[1]);
+
+
+      //this.map.rearrangeChunks(segmentManagers);
       // Rearrange chunks, new work power is available
       // TODO: Add functionality
     }
 
+    // Send new map to all clients
+    this.io.sockets.emit('map', this.map);
 
     console.log("Now "+this.segmentManagers.length+" segmentManager(s) are connected");
   }
