@@ -1,5 +1,4 @@
-var ioClientLib = require('socket.io-client');
-
+var RemoteNeighbor = require ("../mainServer/prototypes/RemoteNeighbor.js").RemoteNeighbor;
 var Chunk = require ("../mainServer/prototypes/Chunk.js");
 var CHUNK_SIZE = Chunk.CHUNK_SIZE;
 Chunk = Chunk.Chunk;
@@ -25,7 +24,6 @@ ChunkManager.prototype.initMainServerSocket = function() {
 
   this.mainServerSocket.on('chunk', function(chunk) {
     localScope.addChunk(chunk);
-    localScope.updateChunkBorders();
   });
 
   this.mainServerSocket.on('map', function(map) {
@@ -59,7 +57,7 @@ ChunkManager.prototype.initPlayerServerSocket = function() {
 
     socket.on('subscribe-chunk', function(chunkID) {
       var chunk = localScope.chunks.find(function(el){
-        return el.id == chunkID;
+         return el.id == chunkID;
       });
       socket.emit('chunk-init', chunk.flatten());
       socket.join(chunkID);
@@ -83,8 +81,37 @@ ChunkManager.prototype.initPlayerServerSocket = function() {
     });
 
     socket.on ("incoming-player", function(playerData) {
-      console.log("lalala");
-      console.log(playerData);
+      var affectedChunk = localScope.chunks.find(function(el){
+        return el.id === playerData.chunkID
+      });
+      var incomingPlayer = localScope.players.find(function(el){
+        return el.playerID === playerData.playerID;
+      });
+
+      if (incomingPlayer) {
+        incomingPlayer.length = playerData.playerLength;
+        incomingPlayer.direction = playerData.direction;
+      } else {
+        incomingPlayer = {
+          'playerID': playerData.playerID,
+          'direction': playerData.direction,
+          'length': playerData.playerLength
+        };
+        localScope.players.push(incomingPlayer);
+      }
+      affectedChunk.handleIncomingPlayer(
+        playerData.playerID,
+        playerData.playerLength,
+        playerData.x,
+        playerData.y
+      );
+    });
+
+    socket.on("sync-border", function(data){
+      var affectedChunk = localScope.chunks.find(function(el){
+        return el.id === data.chunkID;
+      });
+      affectedChunk.neighborHandler("sync-border",data)
     });
 
     socket.on('direction-change', function(data){
@@ -111,6 +138,10 @@ ChunkManager.prototype.initPlayerServerSocket = function() {
       }
     });
 
+    socket.on('', function(){
+
+    });
+
     socket.on('disconnect', function(){
       localScope.players = localScope.players.filter(function(player){
         return player.socket.id != socket.id;
@@ -135,7 +166,7 @@ ChunkManager.prototype.addChunk = function (chunk) {
   console.log ("Received a new chunk to manage from mainServer:");
   console.log (" - - - X: "+chunk.x+" Y: "+chunk.y);
   var newChunk = new Chunk(chunk.id, chunk.x, chunk.y, chunk.segmentManagerID, this);
-  newChunk.copyExistingTiles(chunk.tiles);
+  //newChunk.copyExistingTiles(chunk.tiles);
   this.chunks.push(newChunk);
 }
 
@@ -187,24 +218,21 @@ ChunkManager.prototype.updateChunkBorders = function() {
 }
 
 ChunkManager.prototype.setNeighbor = function (direction, currentChunk, neighbor) {
-  var currSegmentManager = null;
   if (neighbor) {
-    currSegmentManager = this.segmentManagers.find(function(el){
+    var neighborID = neighbor.id;
+    var currSegmentManager = this.segmentManagers.find(function(el){
       return neighbor.segmentManagerID === el.id;
     });
 
-    var neighborHandler = null;
     if (currSegmentManager.address != this.playerServerAddress) {
-      var socket = ioClientLib(currSegmentManager.address);
-      // TODO add handler for remote chunks
-
+      neighbor = new RemoteNeighbor(neighborID, currSegmentManager.address);
     } else {
-      var localNeighbor = this.chunks.find (function(el) {
-        return el.id === neighbor.id;
+      neighbor = this.chunks.find (function(el) {
+        return el.id === neighborID;
       });
     }
   }
-  currentChunk.setBorder(direction, neighbor, localNeighbor);
+  currentChunk.setBorder(direction, neighbor);
 };
 
 ChunkManager.prototype.killPlayer = function (playerID) {

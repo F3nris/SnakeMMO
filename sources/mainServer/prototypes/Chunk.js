@@ -15,6 +15,12 @@ var Tile = require('./Tile.js').Tile;
    this.tiles = {};
    this.appleCount = 0;
    this.parent = parent;
+
+   // Set the corners to be walls
+   this.tiles[0] = new Tile("wall",null);
+   this.tiles[CHUNK_SIZE-1] = new Tile("wall",null);
+   this.tiles[CHUNK_SIZE*(CHUNK_SIZE-1)] = new Tile("wall",null);
+   this.tiles[(CHUNK_SIZE*CHUNK_SIZE)-1] = new Tile("wall",null);
  }
 
  var CHUNK_SIZE = 25;
@@ -25,32 +31,46 @@ var Tile = require('./Tile.js').Tile;
    "right": "left"
  };
 
- Chunk.prototype.setBorder = function (key, neighbor, localNeighbor) {
-   var localScope = this;
+ Chunk.prototype.setBorder = function (key, neighbor) {
    var sqChunkSize = CHUNK_SIZE * CHUNK_SIZE;
 
-   var socket = null;
-   if (neighbor == undefined) {
-     if (key === "top") {
-       for (var i=0; i<sqChunkSize; i+=CHUNK_SIZE) {
+   if (neighbor) {
+     this[key] = {};
+     this[key+"Neighbor"] = neighbor;
+   }
+
+   if (key === "top") {
+     for (var i=CHUNK_SIZE; i<(sqChunkSize-CHUNK_SIZE); i+=CHUNK_SIZE) {
+       if (neighbor == undefined) {
          this.tiles[i] = new Tile("wall",null);
-       }
-     } else if (key === "left") {
-       for (var i=0; i<CHUNK_SIZE; i++) {
-         this.tiles[i] = new Tile("wall",null);
-       }
-     } else if (key === "bot") {
-       for (var i=CHUNK_SIZE-1; i<sqChunkSize; i+=CHUNK_SIZE) {
-         this.tiles[i] = new Tile("wall",null);
-       }
-     } else if (key === "right") {
-       for (var i=sqChunkSize - CHUNK_SIZE; i<sqChunkSize; i++) {
-         this.tiles[i] = new Tile("wall",null);
+       } else {
+         delete this.tiles[i];
        }
      }
-   } else {
-     this[key] = {};
-     this[key+"Neighbor"] = localNeighbor;
+   } else if (key === "left") {
+     for (var i=1; i<(CHUNK_SIZE-1); i++) {
+       if (neighbor == undefined) {
+         this.tiles[i] = new Tile("wall",null);
+       } else {
+         delete this.tiles[i];
+       }
+     }
+   } else if (key === "bot") {
+     for (var i=CHUNK_SIZE+CHUNK_SIZE-1; i<(sqChunkSize-CHUNK_SIZE); i+=CHUNK_SIZE) {
+       if (neighbor == undefined) {
+         this.tiles[i] = new Tile("wall",null);
+       } else {
+         delete this.tiles[i];
+       }
+     }
+   } else if (key === "right") {
+     for (var i=(sqChunkSize-CHUNK_SIZE+1); i<(sqChunkSize-1); i++) {
+       if (neighbor == undefined) {
+         this.tiles[i] = new Tile("wall",null);
+       } else {
+         delete this.tiles[i];
+       }
+     }
    }
  }
 
@@ -70,9 +90,7 @@ var Tile = require('./Tile.js').Tile;
 
          var x = Math.floor(i/CHUNK_SIZE);
          var y = i % CHUNK_SIZE;
-
          coordinates.x = x+this.x; coordinates.y = y+this.y;
-
          return coordinates;
        }
      }
@@ -136,6 +154,7 @@ var Tile = require('./Tile.js').Tile;
      var neededKeys = allTileKeys.filter(filterFunction);
      var result = {
        "direction":OPPOSITE_DIRECTION[direction],
+       "chunkID": this.id,
        "tiles":{}
      };
      for (var i=0; i<neededKeys.length; i++){
@@ -203,7 +222,8 @@ var Tile = require('./Tile.js').Tile;
            'playerID': currentPlayer.playerID,
            'playerLength': currentPlayer.length,
            'x': foreignX,
-           'y': foreignY
+           'y': foreignY,
+           'direction': currentPlayer.direction
          });
        }
      }
@@ -224,7 +244,6 @@ var Tile = require('./Tile.js').Tile;
       this.handleIncomingPlayer(data.playerID, data.playerLength, data.x, data.y);
       break;
     case "sync-border":
-      console.log(data);
       this[data.direction] = data.tiles;
       break;
    }
@@ -235,7 +254,6 @@ var Tile = require('./Tile.js').Tile;
    if (this.tiles[affectedTileKey] && this.tiles[affectedTileKey].type === "apple") {
      this.appleCount --;
    }
-   console.log ("Incomin id: "+this.id);
    this.tiles[affectedTileKey] = new Tile("head",playerID,playerLength,this.parent.currentUpdateCycle);
 
    var updatedChunk = {
@@ -244,6 +262,7 @@ var Tile = require('./Tile.js').Tile;
    };
    updatedChunk.tiles[affectedTileKey] = this.tiles[affectedTileKey];
    this.parent.playerServerSocket.to(this.id.toString()).emit('chunk-update', updatedChunk);
+   this.parent.playerServerSocket.emit('position-update', {'x':x+this.x, 'y':y+this.y});
  }
 
  Chunk.prototype.decreaseTTL = function (tile) {
@@ -285,8 +304,6 @@ var Tile = require('./Tile.js').Tile;
      affectedTile.tile = this.tiles[tileKey];
      affectedTile.foreignOrigin = false;
    } else {
-     console.log("X:"+currentX);
-     console.log("Y:"+currentY);
      if (currentX >= 0 && currentX < CHUNK_SIZE && currentY < 0) { // Top
         affectedTile.tile = this.top[currentX];
         affectedTile.foreignOrigin = "top";
