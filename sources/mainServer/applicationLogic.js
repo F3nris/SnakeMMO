@@ -100,12 +100,12 @@ ApplicationLogic.prototype.spawnPlayer = function (playerID) {
 };
 
 ApplicationLogic.prototype.sendSpawnPoint = function (coordinates) {
-  var player = this.players.filter(function(el){
+  var player = this.players.find(function(el){
     return el.id === coordinates.playerID;
   });
 
-  if (player.length) {
-    player[0].socket.emit('spawn', coordinates);
+  if (player) {
+    player.socket.emit('spawn', coordinates);
   }
 };
 
