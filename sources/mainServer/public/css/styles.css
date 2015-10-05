@@ -1,13 +1,13 @@
 body {
   background-image: url("../assets/tweed.png");
+  font-family: 'Open Sans';
+	font-style: normal;
+	font-variant: normal;
 }
 
 h1 {
   margin-top: 1rem;
-  font-family: 'Open Sans';
 	font-size: 4rem;
-	font-style: normal;
-	font-variant: normal;
   text-align: center;
   color: #ffffff;
 
@@ -36,4 +36,30 @@ h1 {
 
 #asset-wrapper {
   display: none;
+}
+
+#spectator-legend {
+  margin: 0 auto;
+  margin-top: 1rem;
+  padding: 0.5rem 0.5rem 0.5rem 0.5rem;
+  border-radius: 0.5rem;
+  background-color: #fff;
+  width: 50rem;
+  min-height: 5rem;
+}
+
+#spectator-legend h2 {
+  font-size: 1.2rem;
+	text-align: center;
+  color: #000000;
+}
+
+#spectator-legend-content {
+  display: inline-block;
+  width: 100%;
+}
+
+#spectator-legend-content span {
+  display: inline-block;
+  width: 33%;
 }

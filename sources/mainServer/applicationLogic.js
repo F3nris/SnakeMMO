@@ -30,6 +30,9 @@ ApplicationLogic.prototype.init = function () {
       } else if (data.role === "segmentmanager") {
         console.log("A new segmentmanager connected to the server.");
         localScope.addClient("segmentmanager", data.ip + ':' + data.port, socket);
+      } else if (data.role === "spectator") {
+        socket.emit('segment-managers',localScope.flattenedSegmentManagers);
+        socket.emit('map', localScope.map);
       } else {
         socket.disconnect();
       }
