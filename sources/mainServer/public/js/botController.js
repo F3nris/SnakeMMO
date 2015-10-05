@@ -80,7 +80,6 @@ var botManager = (function(){
         // Needs to change direction or chooses to by chance
         var rollTheDice = (Math.random() < 0.4);
         var tmpDirection = botManager.DIRECTION[currBot.direction];
-        console.log("tmpD: "+tmpDirection)
 
         if ((tmpDirection && collider[tmpDirection]) || rollTheDice) {
           var directions = [1,2,3,4];
@@ -94,8 +93,6 @@ var botManager = (function(){
             if (!tmpDirection && currBot.direction != rngDir && rngDir != secondCriterium) {
               currBot.direction = rngDir;
               newDirection = rngDir;
-              console.log("The choice has been made : "+rngDir);
-              console.log(collider);
               break;
             }
           }
@@ -232,16 +229,17 @@ var botManager = (function(){
         numOfBots--;
         setTimeout(function(){
           botManager.spawnBots(numOfBots);
-        }, 1500);
+        }, 50);
       }
     },
     updateLocalPosition : function (coordinates) {
       var bot = botManager.bots.find(function(el){
         return coordinates.playerID === el.botID;
       });
-      bot.x = coordinates.x;
-      bot.y = coordinates.y;
-      console.log("TEST")
+      if (bot) {
+        bot.x = coordinates.x;
+        bot.y = coordinates.y;
+      }
     }
   }
 })();
