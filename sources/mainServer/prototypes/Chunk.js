@@ -262,7 +262,10 @@ var Tile = require('./Tile.js').Tile;
    };
    updatedChunk.tiles[affectedTileKey] = this.tiles[affectedTileKey];
    this.parent.playerServerSocket.to(this.id.toString()).emit('chunk-update', updatedChunk);
-   this.parent.playerServerSocket.emit('position-update', {'x':x+this.x, 'y':y+this.y});
+   var player = this.parent.players.find(function(el){
+     return playerID === el.playerID;
+   });
+   player.socket.emit('position-update', {'x':x+this.x, 'y':y+this.y});
  }
 
  Chunk.prototype.decreaseTTL = function (tile) {
