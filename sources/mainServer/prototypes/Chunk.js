@@ -83,15 +83,31 @@ var Tile = require('./Tile.js').Tile;
    var sqChunkSize = CHUNK_SIZE * CHUNK_SIZE;
 
    if (Object.keys(this.tiles).length < sqChunkSize) {
-     // A spot is free, try to find it
-     for (var i=0; i<sqChunkSize; i++) {
-       if (!this.tiles[i]) {
-         this.tiles[i] = new Tile("head",playerID,length,this.parent.currentUpdateCycle);
+     var tries = 0;
+     while (!coordinates.x && tries < 10) {
+       var x = Math.floor(Math.random() * CHUNK_SIZE);
+       var y = Math.floor(Math.random() * CHUNK_SIZE);
+       var index = x * CHUNK_SIZE + y;
+       if (!this.tiles[index]) {
+         coordinates.x = x+this.x;
+         coordinates.y = y+this.y;
+         this.tiles[index] = new Tile("head",playerID,length,this.parent.currentUpdateCycle);
+       }
+       console.log("aco");
+       tries ++;
+     }
 
-         var x = Math.floor(i/CHUNK_SIZE);
-         var y = i % CHUNK_SIZE;
-         coordinates.x = x+this.x; coordinates.y = y+this.y;
-         return coordinates;
+     if (!coordinates.x) {
+       // A spot is free, try to find it
+       for (var i=0; i<sqChunkSize; i++) {
+         if (!this.tiles[i]) {
+           this.tiles[i] = new Tile("head",playerID,length,this.parent.currentUpdateCycle);
+
+           var x = Math.floor(i/CHUNK_SIZE);
+           var y = i % CHUNK_SIZE;
+           coordinates.x = x+this.x; coordinates.y = y+this.y;
+           return coordinates;
+         }
        }
      }
    }
