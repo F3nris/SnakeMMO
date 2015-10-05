@@ -68,15 +68,18 @@ ChunkManager.prototype.initPlayerServerSocket = function() {
     });
 
     socket.on('playerID', function(playerID) {
-      if (!localScope.players.find(function(el){
+      var player = localScope.players.find(function(el){
         return el.playerID === playerID;
-      })) {
-          localScope.players.push ({
-            'playerID': playerID,
-            'socket': socket,
-            'direction': 0,
-            'length': BASE_LENGTH
-          });
+      });
+      if (player) {
+        player.socket = socket;
+      } else {
+        localScope.players.push ({
+          'playerID': playerID,
+          'socket': socket,
+          'direction': 0,
+          'length': BASE_LENGTH
+        });
       }
     });
 
@@ -119,7 +122,7 @@ ChunkManager.prototype.initPlayerServerSocket = function() {
         return data.playerID === player.playerID;
       });
 
-      if (!player.movementLocked) {
+      if (player && !player.movementLocked) {
         player.movementLocked = true;
 
         var newDirection = data.direction;
@@ -144,7 +147,10 @@ ChunkManager.prototype.initPlayerServerSocket = function() {
 
     socket.on('disconnect', function(){
       localScope.players = localScope.players.filter(function(player){
-        return player.socket.id != socket.id;
+        if (player.socket) {
+            return player.socket.id != socket.id;
+        }
+        return false;
       });
     });
   });
@@ -175,11 +181,29 @@ ChunkManager.prototype.spawnPlayer = function (playerID) {
   var chunk = this.chunks[index];
   var coordinates = chunk.spawnPlayerAtFreeSpot(playerID, BASE_LENGTH);
 
+  var player = this.players.find (function(el){
+    return el.playerID === playerID;
+  });
+  if (!player) {
+    this.players.push({
+      'playerID': playerID,
+      'direction': 0,
+      'length': BASE_LENGTH
+    });
+  }
+
   this.mainServerSocket.emit('spawn', {
     'playerID':playerID,
     'x' : coordinates.x,
     'y' : coordinates.y
   });
+  var updatedChunk = {
+    'id': chunk.id,
+    'tiles': {}
+  };
+  var affectedTileKey = (coordinates.x*CHUNK_SIZE) + coordinates.y;
+  updatedChunk.tiles[affectedTileKey] = chunk.tiles[affectedTileKey];
+  this.playerServerSocket.to(chunk.id.toString()).emit('chunk-update', updatedChunk);
 }
 
 ChunkManager.prototype.updateChunkBorders = function() {
@@ -243,7 +267,9 @@ ChunkManager.prototype.killPlayer = function (playerID) {
       res = true;
     } else {
       for (var j=0; j<localScope.chunks.length; j++) {
-          el.socket.leave(localScope.chunks[j].id);
+        if (el.socket) {
+            el.socket.leave(localScope.chunks[j].id);
+        }
       }
       res = false;
     }
