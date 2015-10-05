@@ -2,6 +2,7 @@ var gameloop = require('node-gameloop');
 
 var Player = require('./prototypes/Player.js').Player;
 var SegmentManager = require('./prototypes/SegmentManager.js').SegmentManager;
+var BotManager = require('./prototypes/BotManager.js').BotManager;
 var Map = require('./prototypes/Map.js').Map;
 var config = require('./config.js');
 
@@ -12,6 +13,7 @@ function ApplicationLogic(io) {
   this.players = [];
   this.segmentManagers = [];
   this.flattenedSegmentManagers = [];
+  this.botManager = null;
 
   this.baseID = 0;
   this.gameLoopID = null;
@@ -33,16 +35,28 @@ ApplicationLogic.prototype.init = function () {
       } else if (data.role === "spectator") {
         socket.emit('segment-managers',localScope.flattenedSegmentManagers);
         socket.emit('map', localScope.map);
+      } else if (data.role === "bot-manager" && !localScope.botManager) {
+        console.log("A bot-manager connected!");
+        localScope.addClient("bot-manager", null, socket);
       } else {
+        console.log("bla")
         socket.disconnect();
       }
     });
   });
 
+  var botsTurn = false;
   this.gameLoopID = gameloop.setGameLoop(function(delta) {
-    for (var i=0; i<localScope.segmentManagers.length; i++) {
-      localScope.segmentManagers[i].socket.emit('update');
+    if (!botsTurn) {
+      for (var i=0; i<localScope.segmentManagers.length; i++) {
+        localScope.segmentManagers[i].socket.emit('update');
+      }
+    } else {
+      if (localScope.botManager) {
+        localScope.botManager.sendUpdate();
+      }
     }
+    botsTurn = !botsTurn;
   }, config.HEARTBEAT);
 };
 
@@ -55,8 +69,8 @@ ApplicationLogic.prototype.addClient = function (type, address, socket) {
     var newPlayer = new Player(this.generateID(), socket, this);
 
     // send map and segmentManagers
-    socket.emit('map', this.map);
     socket.emit('segment-managers',this.flattenedSegmentManagers);
+    socket.emit('map', this.map);
 
     this.players.push(newPlayer);
     console.log("Now "+this.players.length+" player(s) are connected");
@@ -90,6 +104,10 @@ ApplicationLogic.prototype.addClient = function (type, address, socket) {
     this.io.sockets.emit('map', this.map);
 
     console.log("Now "+this.segmentManagers.length+" segmentManager(s) are connected");
+  } else if (type === "bot-manager") {
+    this.botManager = new BotManager(this.generateID(), socket, this);
+    socket.emit('segment-managers',this.flattenedSegmentManagers);
+    socket.emit('map', this.map);
   }
 };
 
@@ -101,7 +119,16 @@ ApplicationLogic.prototype.removeClient = function (role, id) {
     this.segmentManagers = this.filterById(this.segmentManagers, id);
     this.flattenedSegmentManagers = this.filterById(this.flattenedSegmentManagers, id);
     console.log("Now "+this.segmentManagers.length+" segmentManager(s) are connected");
+  } else if (role === "bot-manager") {
+    this.botManager = null;
+    console.log("The botManager disconnected.");
   }
+};
+
+ApplicationLogic.prototype.spawnBotPlayer = function() {
+  var playerID = this.generateID();
+  this.spawnPlayer(playerID);
+  return playerID;
 };
 
 ApplicationLogic.prototype.spawnPlayer = function (playerID) {
@@ -116,6 +143,10 @@ ApplicationLogic.prototype.sendSpawnPoint = function (coordinates) {
 
   if (player) {
     player.socket.emit('spawn', coordinates);
+  } else { // Try botmanager
+    if (this.botManager) {
+      this.botManager.checkSpawnedPlayer(coordinates);
+    }
   }
 };
 
@@ -128,9 +159,14 @@ ApplicationLogic.prototype.filterById = function (array, id) {
 ApplicationLogic.prototype.killPlayer = function (playerID) {
   this.io.to('segment-managers').emit('kill', playerID);
 
-  this.players.find(function(el){
+  var player = this.players.find(function(el){
     return el.id === playerID;
-  }).socket.emit('kill');
+  });
+  if (player){
+    player.socket.emit('kill');
+  } else {
+    this.botManager.checkKilledPlayer(playerID);
+  }
 };
 
 exports.ApplicationLogic = ApplicationLogic;

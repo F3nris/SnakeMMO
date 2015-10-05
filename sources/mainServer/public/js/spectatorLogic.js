@@ -5,14 +5,13 @@ var spectator = (function(){
     localMap : {},
     refMap : {},
     segmentManagers : [],
-    initializedConnections : false,
     init : function() {
       spectator.segmentManagerList = document.getElementById("spectator-legend-content");
       spectator.canvas = document.getElementById("content-canvas");
       spectator.ctx = spectator.canvas.getContext("2d");
       spectator.appleImg = document.getElementById("asset-img-apple");
 
-      spectator.mainServerSocket = io.connect('http://141.45.201.243:4000');
+      spectator.mainServerSocket = io.connect('http://192.168.0.102:4000');
       spectator.mainServerSocket.emit ('introduction', {'role' : 'spectator'});
 
       spectator.mainServerSocket.on ('segment-managers', function(managers){
