@@ -67,9 +67,9 @@ var logic = (function(){
       var x = Math.floor(logic.localPosition.x/logic.CHUNK_SIZE)*logic.CHUNK_SIZE;
       var y = Math.floor(logic.localPosition.y/logic.CHUNK_SIZE)*logic.CHUNK_SIZE;
 
-      var newActiveChunk = network.map.chunks.filter(function(el){
+      var newActiveChunk = network.map.chunks.find(function(el){
         return (el.x === x) && (el.y === y);
-      })[0];
+      });
       if (!logic.activeChunk || logic.activeChunk.id != newActiveChunk.id) {
           logic.activeChunk = newActiveChunk;
           // Check if new connections are necessary
