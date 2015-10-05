@@ -201,7 +201,7 @@ ChunkManager.prototype.spawnPlayer = function (playerID) {
     'id': chunk.id,
     'tiles': {}
   };
-  var affectedTileKey = (coordinates.x*CHUNK_SIZE) + coordinates.y;
+  var affectedTileKey = ((coordinates.x-chunk.x)*CHUNK_SIZE) + coordinates.y -chunk.y;
   updatedChunk.tiles[affectedTileKey] = chunk.tiles[affectedTileKey];
   this.playerServerSocket.to(chunk.id.toString()).emit('chunk-update', updatedChunk);
 }
