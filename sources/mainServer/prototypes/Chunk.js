@@ -209,11 +209,13 @@ var Tile = require('./Tile.js').Tile;
          updatedChunk.tiles[newKey] = t;
          this.tiles[newKey] = t;
 
-         currentPlayer.socket.emit('position-update', {
-           'playerID': currentPlayer.playerID,
-           'x': currentX + this.x,
-           'y': currentY + this.y
-         });
+         if (currentPlayer.socket) {
+           currentPlayer.socket.emit('position-update', {
+             'playerID': currentPlayer.playerID,
+             'x': currentX + this.x,
+             'y': currentY + this.y
+           });
+         }
        } else {
          var foreignX = (currentX + CHUNK_SIZE) % CHUNK_SIZE;
          var foreignY = (currentY + CHUNK_SIZE) % CHUNK_SIZE;
@@ -340,7 +342,11 @@ var Tile = require('./Tile.js').Tile;
      segmentManagerID : this.segmentManagerID,
      x : this.x,
      y : this.y,
-     tiles: this.tiles
+     tiles: this.tiles,
+     left: this.left,
+     right: this.right,
+     bot: this.bot,
+     top: this.top
    }
  }
 
