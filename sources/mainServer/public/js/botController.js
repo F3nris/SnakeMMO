@@ -13,13 +13,14 @@ var botManager = (function(){
     refMap : {},
     segmentManagers : [],
     bots : [],
+    spawnTimeout : null,
     init : function() {
       botManager.console = document.getElementById("bot-console");
       botManager.autoRespawnInput = document.getElementById("input-auto-respawn");
       botManager.numOfBotsInput = document.getElementById("input-num-of-bots");
       botManager.button = document.getElementById("btn-spawn-kill");
 
-      botManager.mainServerSocket = io.connect('http://192.168.0.102:4000');
+      botManager.mainServerSocket = io.connect('http://141.45.203.131:4000');
       botManager.mainServerSocket.emit ('introduction', {'role' : 'bot-manager'});
 
       botManager.mainServerSocket.on ('segment-managers', function(managers){
@@ -28,6 +29,7 @@ var botManager = (function(){
 
       botManager.mainServerSocket.on ('map', function(map){
         botManager.refMap = map;
+        console.log("BLABLA");
         botManager.manageConnections();
       });
 
@@ -37,7 +39,9 @@ var botManager = (function(){
             'direction': 0
         });
         for (var j=0; j<botManager.segmentManagers.length; j++) {
-          botManager.segmentManagers[j].socket.emit('playerID', botID);
+          if (botManager.segmentManagers[j].socket) {
+            botManager.segmentManagers[j].socket.emit('playerID', botID);
+          }
         }
       });
 
@@ -72,44 +76,45 @@ var botManager = (function(){
         var currRefChunk = botManager.refMap.chunks.find(function(el){
           return (el.x === x) && (el.y === y);
         });
-        var currChunk = botManager.localMap[currRefChunk.id];
 
-        var newDirection = null;
-        var collider = botManager.checkCollsion(currChunk,currBot);
 
-        // Needs to change direction or chooses to by chance
-        var rollTheDice = (Math.random() < 0.4);
-        var tmpDirection = botManager.DIRECTION[currBot.direction];
+        if (currRefChunk) {
+          var currChunk = botManager.localMap[currRefChunk.id];
+          var newDirection = null;
+          var collider = botManager.checkCollsion(currChunk,currBot);
 
-        if ((tmpDirection && collider[tmpDirection]) || rollTheDice) {
-          var directions = [1,2,3,4];
-          for (var j=0; j<4; j++) {
-            var rngDir = directions.splice(Math.floor(Math.random()*directions.length),1)[0];
-            tmpDirection = collider[botManager.DIRECTION[rngDir]];
-            var secondCriterium = currBot.direction + 2;
-            if (secondCriterium>4) {
-              secondCriterium = secondCriterium % 4;
-            }
-            if (!tmpDirection && currBot.direction != rngDir && rngDir != secondCriterium) {
-              currBot.direction = rngDir;
-              newDirection = rngDir;
-              break;
+          // Needs to change direction or chooses to by chance
+          var rollTheDice = (Math.random() < 0.4);
+          var tmpDirection = botManager.DIRECTION[currBot.direction];
+
+          if ((tmpDirection && collider[tmpDirection]) || rollTheDice) {
+            var directions = [1,2,3,4];
+            for (var j=0; j<4; j++) {
+              var rngDir = directions.splice(Math.floor(Math.random()*directions.length),1)[0];
+              tmpDirection = collider[botManager.DIRECTION[rngDir]];
+              var secondCriterium = currBot.direction + 2;
+              if (secondCriterium>4) {
+                secondCriterium = secondCriterium % 4;
+              }
+              if (!tmpDirection && currBot.direction != rngDir && rngDir != secondCriterium) {
+                currBot.direction = rngDir;
+                newDirection = rngDir;
+                break;
+              }
             }
           }
+
+
+          if (newDirection != null) {
+            var responsibleSM = botManager.segmentManagers.find(function(el){
+              return el.id === currChunk.segmentManagerID;
+            });
+            responsibleSM.socket.emit('direction-change', {
+              'playerID':currBot.botID,
+              'direction':newDirection
+            });
+          }
         }
-
-
-        if (newDirection != null) {
-          var responsibleSM = botManager.segmentManagers.find(function(el){
-            return el.id === currChunk.segmentManagerID;
-          });
-          responsibleSM.socket.emit('direction-change', {
-            'playerID':currBot.botID,
-            'direction':newDirection
-          });
-        }
-
-
       }
       //setTimeout(botManager.updateBots,225);
     },
@@ -176,7 +181,8 @@ var botManager = (function(){
           return el.id == segmentManagerIDs[i];
         });
 
-        if (!currentSegmentManager.socket) {
+        if (!currentSegmentManager.socket){
+          console.log("SCHALALA");
           currentSegmentManager.socket = io.connect(currentSegmentManager.address);
         }
         currentSegmentManager.socket.on('chunk-init', botManager.receiveChunkInit);
@@ -184,6 +190,7 @@ var botManager = (function(){
         currentSegmentManager.socket.on('position-update', botManager.updateLocalPosition);
 
         var currChunks = chunksSortedBySegmentManager[segmentManagerIDs[i]];
+        console.log(currChunks);
         for (var j=0; j<currChunks.length; j++){
           currentSegmentManager.socket.emit('subscribe-chunk', currChunks[j]);
         }
@@ -210,6 +217,7 @@ var botManager = (function(){
       if (botManager.botsRunning) {
         botManager.button.innerHTML = "Spawn Bots";
         var bots = botManager.bots;
+        clearTimeout(botManager.spawnTimeout);
         for (var i=0; i<bots.length; i++) {
           botManager.mainServerSocket.emit("kill",bots[i].botID);
         }
@@ -227,7 +235,7 @@ var botManager = (function(){
       if (numOfBots > 0) {
         botManager.mainServerSocket.emit('spawn-bot');
         numOfBots--;
-        setTimeout(function(){
+        botManager.spawnTimeout = setTimeout(function(){
           botManager.spawnBots(numOfBots);
         }, 50);
       }

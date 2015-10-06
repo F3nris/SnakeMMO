@@ -11,7 +11,7 @@ var spectator = (function(){
       spectator.ctx = spectator.canvas.getContext("2d");
       spectator.appleImg = document.getElementById("asset-img-apple");
 
-      spectator.mainServerSocket = io.connect('http://192.168.0.102:4000');
+      spectator.mainServerSocket = io.connect('http://141.45.203.131:4000');
       spectator.mainServerSocket.emit ('introduction', {'role' : 'spectator'});
 
       spectator.mainServerSocket.on ('segment-managers', function(managers){
@@ -20,6 +20,7 @@ var spectator = (function(){
 
       spectator.mainServerSocket.on ('map', function(map){
         spectator.refMap = map;
+        spectator.localMap = {};
         spectator.manageConnections();
       });
 
@@ -119,11 +120,13 @@ var spectator = (function(){
       spectator.ctx.fillRect(x,y,1,1);
     },
     render : function () {
+      var keyArray = Object.keys(spectator.localMap);
+
       spectator.ctx.clearRect(0, 0, 800, 480);
       spectator.ctx.save();
+      //spectator.TILE_SIZE = (480 / (keyArray.length/2))/spectator.CHUNK_SIZE;
       spectator.ctx.scale(spectator.TILE_SIZE,spectator.TILE_SIZE);
 
-      var keyArray = Object.keys(spectator.localMap);
       for (var i=0; i<keyArray.length; i++) {
         var chunk = spectator.localMap[keyArray[i]];
         var chunkOffsetX = chunk.x;

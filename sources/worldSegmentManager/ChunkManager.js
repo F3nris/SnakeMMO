@@ -179,31 +179,33 @@ ChunkManager.prototype.addChunk = function (chunk) {
 ChunkManager.prototype.spawnPlayer = function (playerID) {
   var index = Math.floor(Math.random()*this.chunks.length);
   var chunk = this.chunks[index];
-  var coordinates = chunk.spawnPlayerAtFreeSpot(playerID, BASE_LENGTH);
+  if (chunk) {
+    var coordinates = chunk.spawnPlayerAtFreeSpot(playerID, BASE_LENGTH);
 
-  var player = this.players.find (function(el){
-    return el.playerID === playerID;
-  });
-  if (!player) {
-    this.players.push({
-      'playerID': playerID,
-      'direction': 0,
-      'length': BASE_LENGTH
+    var player = this.players.find (function(el){
+      return el.playerID === playerID;
     });
-  }
+    if (!player) {
+      this.players.push({
+        'playerID': playerID,
+        'direction': 0,
+        'length': BASE_LENGTH
+      });
+    }
 
-  this.mainServerSocket.emit('spawn', {
-    'playerID':playerID,
-    'x' : coordinates.x,
-    'y' : coordinates.y
-  });
-  var updatedChunk = {
-    'id': chunk.id,
-    'tiles': {}
-  };
-  var affectedTileKey = ((coordinates.x-chunk.x)*CHUNK_SIZE) + coordinates.y -chunk.y;
-  updatedChunk.tiles[affectedTileKey] = chunk.tiles[affectedTileKey];
-  this.playerServerSocket.to(chunk.id.toString()).emit('chunk-update', updatedChunk);
+    this.mainServerSocket.emit('spawn', {
+      'playerID':playerID,
+      'x' : coordinates.x,
+      'y' : coordinates.y
+    });
+    var updatedChunk = {
+      'id': chunk.id,
+      'tiles': {}
+    };
+    var affectedTileKey = ((coordinates.x-chunk.x)*CHUNK_SIZE) + coordinates.y -chunk.y;
+    updatedChunk.tiles[affectedTileKey] = chunk.tiles[affectedTileKey];
+    this.playerServerSocket.to(chunk.id.toString()).emit('chunk-update', updatedChunk);
+  }
 }
 
 ChunkManager.prototype.updateChunkBorders = function() {

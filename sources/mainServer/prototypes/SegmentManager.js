@@ -6,6 +6,7 @@ function SegmentManager (id, address, socket, parent) {
     this.id = id;
     this.address = address ;
     this.socket = socket;
+    this.assignedChunks = 0;
     this.parent = parent;
     this.init();
   }
@@ -26,6 +27,10 @@ function SegmentManager (id, address, socket, parent) {
 
     this.socket.on('kill', function (playerID) {
       localScope.parent.killPlayer (playerID);
+    });
+
+    this.socket.on('update-fill-level', function(data) {
+      localScope.parent.updateMapFillLevel(data.chunkID, data.fillLevel);
     });
   };
 

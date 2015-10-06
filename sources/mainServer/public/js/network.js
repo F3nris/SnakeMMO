@@ -4,13 +4,14 @@ var network = (function(){
     map : null,
     segmentManagers : [],
     init : function() {
-      network.mainServerSocket = io.connect('http://141.45.201.243:4000');
+      network.mainServerSocket = io.connect('http://141.45.203.131:4000');
 
       // Introduce yourself to the mainServer
       network.mainServerSocket.emit ('introduction', {'role' : 'player'});
 
       // Receive the map
       network.mainServerSocket.on ('map', function(mapUpdate){
+        console.log("SCHALALALA");
         network.map = mapUpdate;
         logic.calculateRelevantChunks();
       });

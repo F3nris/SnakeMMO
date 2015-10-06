@@ -7,7 +7,7 @@ var Map = require('./prototypes/Map.js').Map;
 var config = require('./config.js');
 
 function ApplicationLogic(io) {
-  this.map= {};
+  this.map = null;
   this.io = io;
 
   this.players = [];
@@ -34,12 +34,11 @@ ApplicationLogic.prototype.init = function () {
         localScope.addClient("segmentmanager", data.ip + ':' + data.port, socket);
       } else if (data.role === "spectator") {
         socket.emit('segment-managers',localScope.flattenedSegmentManagers);
-        socket.emit('map', localScope.map);
+        socket.emit('map', localScope.map.flatten());
       } else if (data.role === "bot-manager" && !localScope.botManager) {
         console.log("A bot-manager connected!");
         localScope.addClient("bot-manager", null, socket);
       } else {
-        console.log("bla")
         socket.disconnect();
       }
     });
@@ -47,6 +46,11 @@ ApplicationLogic.prototype.init = function () {
 
   var botsTurn = false;
   this.gameLoopID = gameloop.setGameLoop(function(delta) {
+    if (localScope.map){
+      if (localScope.map.checkFillness()){
+        localScope.io.sockets.emit('map', localScope.map.flatten());
+      }
+    }
     if (!botsTurn) {
       for (var i=0; i<localScope.segmentManagers.length; i++) {
         localScope.segmentManagers[i].socket.emit('update');
@@ -70,7 +74,7 @@ ApplicationLogic.prototype.addClient = function (type, address, socket) {
 
     // send map and segmentManagers
     socket.emit('segment-managers',this.flattenedSegmentManagers);
-    socket.emit('map', this.map);
+    socket.emit('map', this.map.flatten());
 
     this.players.push(newPlayer);
     console.log("Now "+this.players.length+" player(s) are connected");
@@ -83,31 +87,20 @@ ApplicationLogic.prototype.addClient = function (type, address, socket) {
 
     if (this.segmentManagers.length === 1) {
       // First segmentmanager, init map
-      this.map = new Map();
-      this.map.init(this.segmentManagers[0].id);
-
-      for (var i=0; i<this.map.chunks.length; i++) {
-        socket.emit('chunk', this.map.chunks[i]);
-      }
-      socket.emit('map', this.map);
+      this.map = new Map(this);
+      this.map.init(this.segmentManagers[0]);
     } else {
-      this.map.tmp(newSegmentmanager.id);
-      socket.emit('chunk', this.map.chunks[1]);
-
-
-      //this.map.rearrangeChunks(segmentManagers);
-      // Rearrange chunks, new work power is available
-      // TODO: Add functionality
+      this.map.rearrangeChunks();
     }
 
     // Send new map to all clients
-    this.io.sockets.emit('map', this.map);
+    this.io.sockets.emit('map', this.map.flatten());
 
     console.log("Now "+this.segmentManagers.length+" segmentManager(s) are connected");
   } else if (type === "bot-manager") {
     this.botManager = new BotManager(this.generateID(), socket, this);
     socket.emit('segment-managers',this.flattenedSegmentManagers);
-    socket.emit('map', this.map);
+    socket.emit('map', this.map.flatten());
   }
 };
 
@@ -151,9 +144,16 @@ ApplicationLogic.prototype.sendSpawnPoint = function (coordinates) {
 };
 
 ApplicationLogic.prototype.filterById = function (array, id) {
-    return array.filter(function( obj ) {
-        return obj.id != id;
-    });
+  return array.filter(function( obj ) {
+      return obj.id != id;
+  });
+};
+
+ApplicationLogic.prototype.updateMapFillLevel = function(chunkID, fillLevel){
+  var chunk = this.map.chunks.find(function(el){
+    return el.id === chunkID;
+  });
+  chunk.fillLevel = fillLevel;
 };
 
 ApplicationLogic.prototype.killPlayer = function (playerID) {

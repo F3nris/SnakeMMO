@@ -14,6 +14,7 @@ var Tile = require('./Tile.js').Tile;
    this.y = y;
    this.tiles = {};
    this.appleCount = 0;
+   this.fillLevel = 0;
    this.parent = parent;
 
    // Set the corners to be walls
@@ -21,6 +22,9 @@ var Tile = require('./Tile.js').Tile;
    this.tiles[CHUNK_SIZE-1] = new Tile("wall",null);
    this.tiles[CHUNK_SIZE*(CHUNK_SIZE-1)] = new Tile("wall",null);
    this.tiles[(CHUNK_SIZE*CHUNK_SIZE)-1] = new Tile("wall",null);
+
+   this.minAppleCount = 2;
+   this.maxAppleCount = 10;
  }
 
  var CHUNK_SIZE = 25;
@@ -93,7 +97,6 @@ var Tile = require('./Tile.js').Tile;
          coordinates.y = y+this.y;
          this.tiles[index] = new Tile("head",playerID,length,this.parent.currentUpdateCycle);
        }
-       console.log("aco");
        tries ++;
      }
 
@@ -115,6 +118,7 @@ var Tile = require('./Tile.js').Tile;
  };
 
  Chunk.prototype.updatePositionsAndTTLs = function (players) {
+   var fillLevel = 0;
    var tileKeys = Object.keys(this.tiles);
 
    var updatedChunk = {
@@ -122,7 +126,7 @@ var Tile = require('./Tile.js').Tile;
      'tiles': {}
    };
 
-   if (players.length > (this.appleCount * 0.5)) {
+   if (this.appleCount < this.minAppleCount || ((this.appleCount < this.maxAppleCount) && (players.length > this.appleCount))) {
      this.spawnApple(updatedChunk);
    }
 
@@ -141,6 +145,8 @@ var Tile = require('./Tile.js').Tile;
          if (this.decreaseTTL(currentTile) || !currentPlayer) {
            updatedChunk.tiles[currentTileKey] = null;
            delete this.tiles[currentTileKey];
+         } else {
+           fillLevel ++;
          }
        } else if (currentTile.type === "head") {
          if (!currentPlayer) {
@@ -149,6 +155,7 @@ var Tile = require('./Tile.js').Tile;
          } else {
            // Update Position
            this.updateSnakeHead(currentPlayer, currentTile, currentTileKey, updatedChunk);
+           fillLevel++;
          }
        }
      }
@@ -159,9 +166,12 @@ var Tile = require('./Tile.js').Tile;
    this.syncBorder("left",function(el){return (parseFloat(el) < CHUNK_SIZE);},false);
    this.syncBorder("right",function(el){return (parseFloat(el) >= CHUNK_SIZE*(CHUNK_SIZE-1))},false);
 
-    if (Object.keys(updatedChunk.tiles).length) {
-        this.parent.playerServerSocket.to(this.id.toString()).emit('chunk-update', updatedChunk);
-    }
+   if (Object.keys(updatedChunk.tiles).length) {
+     this.parent.playerServerSocket.to(this.id.toString()).emit('chunk-update', updatedChunk);
+   }
+
+   fillLevel /= ((CHUNK_SIZE-1)*(CHUNK_SIZE-1));
+   this.parent.mainServerSocket.emit('update-fill-level', {'chunkID': this.id, 'fillLevel': fillLevel})
  };
 
  Chunk.prototype.syncBorder = function(direction, filterFunction, extractAsRow) {
@@ -283,7 +293,9 @@ var Tile = require('./Tile.js').Tile;
    var player = this.parent.players.find(function(el){
      return playerID === el.playerID;
    });
-   player.socket.emit('position-update', {'x':x+this.x, 'y':y+this.y});
+   if (player && player.socket) {
+     player.socket.emit('position-update', {'x':x+this.x, 'y':y+this.y});
+   }
  }
 
  Chunk.prototype.decreaseTTL = function (tile) {
