@@ -124,7 +124,10 @@ var spectator = (function(){
 
       spectator.ctx.clearRect(0, 0, 800, 480);
       spectator.ctx.save();
-      //spectator.TILE_SIZE = (480 / (keyArray.length/2))/spectator.CHUNK_SIZE;
+      spectator.TILE_SIZE = (480 / (keyArray.length/2))/spectator.CHUNK_SIZE;
+      if (spectator.TILE_SIZE < 3) {
+        spectator.TILE_SIZE = 3;
+      }
       spectator.ctx.scale(spectator.TILE_SIZE,spectator.TILE_SIZE);
 
       for (var i=0; i<keyArray.length; i++) {

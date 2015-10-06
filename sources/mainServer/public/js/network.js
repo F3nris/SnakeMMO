@@ -11,7 +11,6 @@ var network = (function(){
 
       // Receive the map
       network.mainServerSocket.on ('map', function(mapUpdate){
-        console.log("SCHALALALA");
         network.map = mapUpdate;
         logic.calculateRelevantChunks();
       });

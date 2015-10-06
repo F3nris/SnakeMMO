@@ -29,7 +29,6 @@ var botManager = (function(){
 
       botManager.mainServerSocket.on ('map', function(map){
         botManager.refMap = map;
-        console.log("BLABLA");
         botManager.manageConnections();
       });
 
